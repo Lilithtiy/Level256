@@ -172,7 +172,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 3719817948
+  GlobalObjectIdHash: 748293835
   InScenePlacedSourceGlobalObjectIdHash: 0
   m_InScenePlacedDisabledByDefault: 0
   DeferredDespawnTick: 0
@@ -239,7 +239,6 @@ MonoBehaviour:
   standHeight: 2
   crouchHeight: 1.2
   mouseSensitivity: 5
-  cameraTransform: {fileID: 4805154102521033358}
 --- !u!114 &-6588418179630385436
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -317,7 +316,7 @@ GameObject:
   - component: {fileID: 7153776907615900847}
   m_Layer: 0
   m_Name: Camera
-  m_TagString: MainCamera
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

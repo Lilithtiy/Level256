@@ -26,7 +26,8 @@ public class PlayerController : NetworkBehaviour
 
     [Header("Camera")]
     [SerializeField] private float mouseSensitivity = 2f;
-    public Transform cameraTransform;
+    Camera camera;
+    Transform cameraTransform;
     private Vector2 lookInput;
     private float xRotation = 0f;
 
@@ -43,6 +44,14 @@ public class PlayerController : NetworkBehaviour
         controller = GetComponent<CharacterController>();
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+        camera = GetComponentInChildren<Camera>();
+        cameraTransform = camera.transform;
+    }
+
+    private void Start()
+    {
+        cameraTransform = camera.transform;
+        camera.targetDisplay++;
     }
 
     public override void OnNetworkSpawn()
@@ -127,6 +136,7 @@ public class PlayerController : NetworkBehaviour
 
     private void Look()
     {
+        if(!IsOwner) return;
         //input fra spillerens roation i forbindelse med Unitys Time.deltaTime
         float MouseX = lookInput.x * mouseSensitivity * 0.75f * Time.deltaTime;
         float MouseY = lookInput.y * mouseSensitivity * 0.75f * Time.deltaTime;

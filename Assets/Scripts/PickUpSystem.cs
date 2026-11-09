@@ -12,12 +12,19 @@ public class PickUpSystem : MonoBehaviour
     public GameObject item;
     public Transform pickupPoint;
 
+    private Camera camera;
+
+    private void Awake()
+    {
+        camera = GetComponentInChildren<Camera>();
+    }
+
     //UI
     //public UiManager UIManager;
 
     private void Update()
     {
-        if (Physics.Raycast(Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue()), out RaycastHit hit, pickupMaxDistance, pickupMask))
+        if (Physics.Raycast(camera.ScreenPointToRay(Mouse.current.position.ReadValue()), out RaycastHit hit, pickupMaxDistance, pickupMask))
         {
             //UIManager.ShowInteractableText();
         }
@@ -43,14 +50,14 @@ public class PickUpSystem : MonoBehaviour
         }
 
         //hvis der intet kamera er
-        if (Camera.main == null)
+        if (camera == null)
         {
-            Debug.LogError("No MainCamera found!");
+            Debug.LogError("No camera found!");
             return;
         }
 
         //raycast-check
-        if (Physics.Raycast(Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue()), out RaycastHit hit, pickupMaxDistance, pickupMask))
+        if (Physics.Raycast(camera.ScreenPointToRay(Mouse.current.position.ReadValue()), out RaycastHit hit, pickupMaxDistance, pickupMask))
         {
             item = hit.collider.gameObject;
             PickUpItem();
