@@ -11,6 +11,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Testers/NetworkTest.unity
     guid: 71cebfa567847c140b364b11057e47a8
+  - enabled: 1
+    path: Assets/Scenes/FPPScene.unity
+    guid: 450598f9ce309e348935e899191d2f85
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0

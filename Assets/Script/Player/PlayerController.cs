@@ -10,6 +10,7 @@ public class PlayerController : NetworkBehaviour
     [SerializeField] private InputActionReference jumpAction;
     [SerializeField] private InputActionReference crouchAction;
     [SerializeField] private InputActionReference sprintAction;
+    [SerializeField] private InputActionReference lookAction;
 
     [Header("Movement")]
     [SerializeField] private float walkSpeed = 3f;
@@ -23,6 +24,12 @@ public class PlayerController : NetworkBehaviour
     [SerializeField] private float standHeight = 2f;
     [SerializeField] private float crouchHeight = 1.2f;
 
+    [Header("Camera")]
+    [SerializeField] private float mouseSensitivity = 2f;
+    public Transform cameraTransform;
+    private Vector2 lookInput;
+    private float xRotation = 0f;
+
     private readonly NetworkVariable<bool> isCrouching = new(
         false,
         NetworkVariableReadPermission.Everyone,
@@ -34,6 +41,8 @@ public class PlayerController : NetworkBehaviour
     private void Awake()
     {
         controller = GetComponent<CharacterController>();
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
     }
 
     public override void OnNetworkSpawn()
@@ -47,6 +56,7 @@ public class PlayerController : NetworkBehaviour
         jumpAction.action.Enable();
         crouchAction.action.Enable();
         sprintAction.action.Enable();
+        lookAction.action.Enable();
 
         controller.enabled = false;
         transform.position = new Vector3(Random.Range(-3f, 3f), 0.1f, Random.Range(-3f, 3f));
@@ -63,6 +73,7 @@ public class PlayerController : NetworkBehaviour
         jumpAction.action.Disable();
         crouchAction.action.Disable();
         sprintAction.action.Disable();
+        lookAction.action.Disable();
     }
 
     private void Update()
@@ -93,6 +104,9 @@ public class PlayerController : NetworkBehaviour
         move.y = verticalVelocity;
 
         controller.Move(move * Time.deltaTime);
+
+        lookInput = lookAction.action.ReadValue<Vector2>();
+        Look();
     }
 
     private void OnCrouchChanged(bool previous, bool current) => ApplyCrouch(current);
@@ -109,5 +123,20 @@ public class PlayerController : NetworkBehaviour
             visual.localScale = new Vector3(1f, h / standHeight, 1f);
             visual.localPosition = new Vector3(0f, h * 0.5f, 0f);
         }
+    }
+
+    private void Look()
+    {
+        //input fra spillerens roation i forbindelse med Unitys Time.deltaTime
+        float MouseX = lookInput.x * mouseSensitivity * 0.75f * Time.deltaTime;
+        float MouseY = lookInput.y * mouseSensitivity * 0.75f * Time.deltaTime;
+
+        //y-værdien af mouse-input laves om til in-game x-rotation hvilket i Unity er "op og ned"
+        xRotation -= MouseY;
+        xRotation = Mathf.Clamp(xRotation, -90f, 90f);
+
+        //rotering af kamera og gameobject transform
+        cameraTransform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
+        transform.Rotate(Vector3.up * MouseX);
     }
 }
