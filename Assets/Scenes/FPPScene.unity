@@ -372,6 +372,7 @@ GameObject:
   - component: {fileID: 935310624}
   - component: {fileID: 935310626}
   - component: {fileID: 935310627}
+  - component: {fileID: 935310628}
   m_Layer: 0
   m_Name: NetworkManager
   m_TagString: Untagged
@@ -492,6 +493,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e1bcdcd270bfdce47b236ac006989a12, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SessionUI
+--- !u!114 &935310628
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 935310621}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d7a6f06b0a543c54ca6844eed18027de, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ProximityVoice
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
