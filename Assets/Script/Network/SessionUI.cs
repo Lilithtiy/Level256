@@ -14,6 +14,7 @@ public class SessionUI : MonoBehaviour
         {
             var options = new SessionOptions { MaxPlayers = 4 }.WithRelayNetwork();
             session = await MultiplayerService.Instance.CreateSessionAsync(options);
+            GetComponent<ProximityVoice>().StartVoice(session.Code);
             status = $"Hosting. Join code: {session.Code}";
             Debug.Log($"Join code: {session.Code}");
         }
@@ -29,6 +30,7 @@ public class SessionUI : MonoBehaviour
         try
         {
             session = await MultiplayerService.Instance.JoinSessionByCodeAsync(joinCode.Trim());
+            GetComponent<ProximityVoice>().StartVoice(session.Code);
             status = "Joined session";
         }
         catch (System.Exception e)
@@ -54,6 +56,7 @@ public class SessionUI : MonoBehaviour
         }
         else if (GUILayout.Button("Leave"))
         {
+            GetComponent<ProximityVoice>().StopVoice();
             session.LeaveAsync();
             session = null;
             status = "Left session";
