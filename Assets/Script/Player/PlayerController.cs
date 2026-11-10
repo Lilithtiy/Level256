@@ -26,7 +26,7 @@ public class PlayerController : NetworkBehaviour
 
     [Header("Camera")]
     [SerializeField] private float mouseSensitivity = 2f;
-    Camera camera;
+    new Camera camera;
     Transform cameraTransform;
     private Vector2 lookInput;
     private float xRotation = 0f;
@@ -42,16 +42,8 @@ public class PlayerController : NetworkBehaviour
     private void Awake()
     {
         controller = GetComponent<CharacterController>();
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
         camera = GetComponentInChildren<Camera>();
         cameraTransform = camera.transform;
-    }
-
-    private void Start()
-    {
-        cameraTransform = camera.transform;
-        camera.targetDisplay++;
     }
 
     public override void OnNetworkSpawn()
@@ -67,9 +59,13 @@ public class PlayerController : NetworkBehaviour
         sprintAction.action.Enable();
         lookAction.action.Enable();
 
-        controller.enabled = false;
-        transform.position = new Vector3(Random.Range(-3f, 3f), 0.1f, Random.Range(-3f, 3f));
-        controller.enabled = true;
+        controller.enabled = IsOwner;
+        transform.position = new Vector3(Random.Range(-3f, 3f), 1f, Random.Range(-3f, 3f));
+
+        camera.enabled = IsOwner;
+        camera.GetComponent<AudioListener>().enabled = IsOwner;
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
     }
 
     public override void OnNetworkDespawn()
@@ -109,7 +105,10 @@ public class PlayerController : NetworkBehaviour
                     : walkSpeed;
 
         Vector2 input = moveAction.action.ReadValue<Vector2>();
-        Vector3 move = new Vector3(input.x, 0f, input.y) * speed;
+
+        //movement in relation to the players rotation
+        Vector3 move = transform.right * input.x + transform.forward * input.y;
+        move *= speed;
         move.y = verticalVelocity;
 
         controller.Move(move * Time.deltaTime);
@@ -125,7 +124,7 @@ public class PlayerController : NetworkBehaviour
         float h = crouching ? crouchHeight : standHeight;
 
         controller.height = h;
-        controller.center = new Vector3(0f, h * 0.5f, 0f);
+        //controller.center = new Vector3(0f, h * 0.5f, 0f);
 
         if (visual != null)
         {
@@ -138,8 +137,8 @@ public class PlayerController : NetworkBehaviour
     {
         if(!IsOwner) return;
         //input fra spillerens roation i forbindelse med Unitys Time.deltaTime
-        float MouseX = lookInput.x * mouseSensitivity * 0.75f * Time.deltaTime;
-        float MouseY = lookInput.y * mouseSensitivity * 0.75f * Time.deltaTime;
+        float MouseX = lookInput.x * mouseSensitivity;
+        float MouseY = lookInput.y * mouseSensitivity;
 
         //y-værdien af mouse-input laves om til in-game x-rotation hvilket i Unity er "op og ned"
         xRotation -= MouseY;

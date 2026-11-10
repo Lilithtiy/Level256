@@ -12,7 +12,7 @@ public class PickUpSystem : MonoBehaviour
     public GameObject item;
     public Transform pickupPoint;
 
-    private Camera camera;
+    new Camera camera;
 
     private void Awake()
     {
