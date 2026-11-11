@@ -57,6 +57,8 @@ public class PlayerController : NetworkBehaviour
     private CharacterController controller;
     private float verticalVelocity;
 
+    public bool IsCrouching => isCrouching.Value;
+
     private void Awake()
     {
         controller = GetComponent<CharacterController>();
