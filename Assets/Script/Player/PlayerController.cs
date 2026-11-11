@@ -179,4 +179,13 @@ public class PlayerController : NetworkBehaviour
         Cursor.lockState = locked ? CursorLockMode.Locked : CursorLockMode.None;
         Cursor.visible = !locked;
     }
+
+    [Rpc(SendTo.Owner)]
+    public void RespawnRpc(Vector3 position)
+    {
+        controller.enabled = false;
+        transform.position = position;
+        controller.enabled = true;
+        verticalVelocity = 0f;
+    }
 }
