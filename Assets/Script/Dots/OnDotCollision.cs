@@ -15,24 +15,15 @@ public class OnDotCollision : NetworkBehaviour
     }
 
     private void OnTriggerEnter(Collider other)
-    {
+    {   
         if (other.gameObject.CompareTag("Player"))
         {
             // Get the CollisionHandler component from the collided player
             CollisionHandler collisionHandler = other.gameObject.GetComponent<CollisionHandler>();
-            if (collisionHandler != null)
+            if (collisionHandler != null || collisionHandler.IsOwner)
             {
                 // Call the method to handle the dot collision
                 collisionHandler.HandleDotCollision(dotValue, scoreValue, dotNetworkObject);
-
-                if (dotNetworkObject != null && dotNetworkObject.IsSpawned)
-                {
-                    // Despawn the dot on the server
-                    if (IsServer)
-                    {
-                        dotNetworkObject.Despawn(true);
-                    }
-                }
             }
         }
     }
