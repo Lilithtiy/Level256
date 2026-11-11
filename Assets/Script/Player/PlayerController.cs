@@ -23,6 +23,9 @@ public class PlayerController : NetworkBehaviour
     [SerializeField] private Transform visual;
     [SerializeField] private float standHeight = 2f;
     [SerializeField] private float crouchHeight = 1.2f;
+    [SerializeField] private float standEyeHeight = 1.7f;
+    [SerializeField] private float crouchEyeHeight = 1.0f;
+
 
     [Header("Camera")]
     [SerializeField] private float mouseSensitivity = 2f;
@@ -30,6 +33,8 @@ public class PlayerController : NetworkBehaviour
     Transform cameraTransform;
     private Vector2 lookInput;
     private float xRotation = 0f;
+
+    private AudioListener audioListener;
 
     private readonly NetworkVariable<bool> isCrouching = new(
         false,
@@ -44,12 +49,16 @@ public class PlayerController : NetworkBehaviour
         controller = GetComponent<CharacterController>();
         camera = GetComponentInChildren<Camera>();
         cameraTransform = camera.transform;
+        audioListener = camera.GetComponent<AudioListener>();
     }
 
     public override void OnNetworkSpawn()
     {
         isCrouching.OnValueChanged += OnCrouchChanged;
         ApplyCrouch(isCrouching.Value);
+
+        camera.enabled = IsOwner;
+        audioListener.enabled = IsOwner;
 
         if (!IsOwner) return;
 
@@ -59,13 +68,12 @@ public class PlayerController : NetworkBehaviour
         sprintAction.action.Enable();
         lookAction.action.Enable();
 
-        controller.enabled = IsOwner;
+        controller.enabled = false;
         transform.position = new Vector3(Random.Range(-3f, 3f), 1f, Random.Range(-3f, 3f));
+        controller.enabled = true;
 
-        camera.enabled = IsOwner;
-        camera.GetComponent<AudioListener>().enabled = IsOwner;
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+        if (visual != null) visual.gameObject.SetActive(false);
+        SetCursorLocked(true);
     }
 
     public override void OnNetworkDespawn()
@@ -84,6 +92,13 @@ public class PlayerController : NetworkBehaviour
     private void Update()
     {
         if (!IsOwner) return;
+
+        if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
+            SetCursorLocked(false);
+
+        if (Cursor.lockState != CursorLockMode.Locked &&
+            Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
+            SetCursorLocked(true);
 
         bool crouching = crouchAction.action.IsPressed();
         if (crouching != isCrouching.Value)
@@ -113,8 +128,11 @@ public class PlayerController : NetworkBehaviour
 
         controller.Move(move * Time.deltaTime);
 
-        lookInput = lookAction.action.ReadValue<Vector2>();
-        Look();
+        if (Cursor.lockState == CursorLockMode.Locked)
+        {
+            lookInput = lookAction.action.ReadValue<Vector2>();
+            Look();
+        }
     }
 
     private void OnCrouchChanged(bool previous, bool current) => ApplyCrouch(current);
@@ -124,12 +142,19 @@ public class PlayerController : NetworkBehaviour
         float h = crouching ? crouchHeight : standHeight;
 
         controller.height = h;
-        //controller.center = new Vector3(0f, h * 0.5f, 0f);
+        controller.center = new Vector3(0f, h * 0.5f, 0f);
 
         if (visual != null)
         {
             visual.localScale = new Vector3(1f, h / standHeight, 1f);
             visual.localPosition = new Vector3(0f, h * 0.5f, 0f);
+        }
+
+        if (cameraTransform != null)
+        {
+            Vector3 p = cameraTransform.localPosition;
+            p.y = crouching ? crouchEyeHeight : standEyeHeight;
+            cameraTransform.localPosition = p;
         }
     }
 
@@ -147,5 +172,11 @@ public class PlayerController : NetworkBehaviour
         //rotering af kamera og gameobject transform
         cameraTransform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
         transform.Rotate(Vector3.up * MouseX);
+    }
+
+    private void SetCursorLocked(bool locked)
+    {
+        Cursor.lockState = locked ? CursorLockMode.Locked : CursorLockMode.None;
+        Cursor.visible = !locked;
     }
 }
