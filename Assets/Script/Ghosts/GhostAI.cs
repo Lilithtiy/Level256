@@ -56,6 +56,12 @@ public class GhostAI : NetworkBehaviour
 
     private void Update()
     {
+        if (GameManager.Instance != null && GameManager.Instance.State.Value == GameState.GameOver)
+        {
+            agent.isStopped = true;
+            return;
+        }
+
         if (Time.time < stunnedUntil) return;
         if (agent.isStopped) agent.isStopped = false;
 
@@ -64,7 +70,7 @@ public class GhostAI : NetworkBehaviour
 
         Transform target = FindNearestPlayer(out float distance, out ulong clientId);
 
-        if (target != null && distance <= catchDistance && GameManager.Instance.TryCatchPlayer(clientId))
+        if (target != null && distance <= catchDistance && GameManager.Instance.TryCatchPlayer(clientId, transform.position))
         {
             stunnedUntil = Time.time + stunSeconds;
             agent.ResetPath();
@@ -148,5 +154,18 @@ public class GhostAI : NetworkBehaviour
         Vector3 random = transform.position + Random.insideUnitSphere * wanderRadius;
         if (NavMesh.SamplePosition(random, out NavMeshHit hit, wanderRadius, NavMesh.AllAreas))
             agent.SetDestination(hit.position);
+    }
+
+    public static void ResetAll()
+    {
+        foreach (var ghost in allGhosts) ghost.ResetGhost();
+    }
+
+    private void ResetGhost()
+    {
+        stunnedUntil = 0f;
+        agent.ResetPath();
+        agent.Warp(homePosition);
+        agent.isStopped = false;
     }
 }
