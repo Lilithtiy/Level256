@@ -33,17 +33,17 @@ public class GameManager : NetworkBehaviour
     public NetworkVariable<int> electricityScore { get; private set; } = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     public NetworkVariable<float> highScore { get; private set; } = new NetworkVariable<float>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
-    public void UpdateElectricityScore(int value, NetworkObject dotNetworkObject)
+    public void UpdateElectricityScore(int value)
     {
-        if(!IsServer || dotNetworkObject == null || !dotNetworkObject.IsSpawned) { return; }
+        if(!IsServer) { return; }
 
         electricityScore.Value = Mathf.Clamp(electricityScore.Value + value, 0, 100);
         Debug.Log("Electricity Score: " + electricityScore.Value);
     }
 
-    public void UpdateHighScore(int value, NetworkObject dotNetworkObject)
+    public void UpdateHighScore(int value)
     {
-        if (!IsServer || dotNetworkObject == null || !dotNetworkObject.IsSpawned) { return; }
+        if(!IsServer) { return; }
 
         highScore.Value = Mathf.Clamp(highScore.Value + value.ConvertTo<float>(), 0, float.MaxValue);
         Debug.Log("High Score: " + highScore.Value);
