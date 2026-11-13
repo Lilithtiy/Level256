@@ -45,7 +45,7 @@ public class PlayerController : NetworkBehaviour
     private float flashAlpha;
     private Coroutine catchRoutine;
 
-    private bool wasGameOver;
+    private bool wasFrozen;
 
     private AudioListener audioListener;
 
@@ -83,10 +83,6 @@ public class PlayerController : NetworkBehaviour
         sprintAction.action.Enable();
         lookAction.action.Enable();
 
-        controller.enabled = false;
-        transform.position = new Vector3(Random.Range(-3f, 3f), 1f, Random.Range(-3f, 3f));
-        controller.enabled = true;
-
         if (visual != null) visual.gameObject.SetActive(false);
         SetCursorLocked(true);
     }
@@ -108,14 +104,14 @@ public class PlayerController : NetworkBehaviour
     {
         if (!IsOwner) return;
 
-        bool gameOver = GameManager.Instance != null && GameManager.Instance.State.Value == GameState.GameOver;
+        bool frozen = GameManager.Instance != null && GameManager.Instance.State.Value != GameState.Playing;
 
-        if (gameOver != wasGameOver)
+        if (frozen != wasFrozen)
         {
-            wasGameOver = gameOver;
-            SetCursorLocked(!gameOver); // free the mouse for the restart button, and re-lock after restart
+            wasFrozen = frozen;
+            SetCursorLocked(!frozen);
         }
-        if (gameOver) return;
+        if (frozen) return;
 
         if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
             SetCursorLocked(false);

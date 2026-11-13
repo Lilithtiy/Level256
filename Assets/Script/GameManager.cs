@@ -9,16 +9,21 @@ public class GameManager : NetworkBehaviour
     public static GameManager Instance { get; private set; }
 
     [SerializeField] private int startingLives = 3;
-    [SerializeField] private float safeSeconds = 3f;
+    [SerializeField] private float safeSeconds = 5f;
     [SerializeField] private Transform[] respawnPoints;
 
-    // Server writes, everyone reads
-    public NetworkVariable<int> Lives = new(3, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+    public NetworkVariable<int> Lives = new(
+        3,
+        NetworkVariableReadPermission.Everyone,
+        NetworkVariableWritePermission.Server);
 
-    public NetworkVariable<GameState> State = new(GameState.Playing, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+    public NetworkVariable<GameState> State = new(
+        GameState.Playing,
+        NetworkVariableReadPermission.Everyone,
+        NetworkVariableWritePermission.Server);
 
-    // Sever ONLY 
-    public event System.Action OnGameRestarted;
+    // SERVER ONLY. its fires when the round starts (and the ghost spawner listens to this).
+    public event System.Action OnRoundStarted;
 
     private readonly Dictionary<ulong, float> safeUntil = new();
 
@@ -27,12 +32,24 @@ public class GameManager : NetworkBehaviour
         Instance = this;
     }
 
-    public override void OnNetworkSpawn()
+    // its called by GameFlow once the players have been spawned
+    public void BeginRound()
     {
-        if (IsServer) Lives.Value = startingLives;
+        if (!IsServer) return;
+
+        safeUntil.Clear();
+        Lives.Value = startingLives;
+        State.Value = GameState.Playing;
+
+        if (GhostSpawner.Instance != null)
+            GhostSpawner.Instance.SpawnGhosts();
+        else
+            Debug.LogWarning("GameManager: there is no GhostSpawner in the scene, so NO ghosts will spawn.");
+
+        OnRoundStarted?.Invoke();   // here for other systems
     }
 
-    // its Called by ghosts. Server only. And it returns true if the catch counted
+    // its called by ghosts. Server only. and returns true if the catch counted.
     public bool TryCatchPlayer(ulong clientId, Vector3 ghostPosition)
     {
         if (!IsServer || State.Value != GameState.Playing || Lives.Value <= 0) return false;
@@ -52,38 +69,26 @@ public class GameManager : NetworkBehaviour
         }
 
         var player = NetworkManager.Singleton.ConnectedClients[clientId].PlayerObject;
-        player.GetComponent<PlayerController>().CaughtRpc(ghostPosition, GetRespawnPosition(), gameOver);
+        player.GetComponent<PlayerController>().CaughtRpc(ghostPosition, GetRandomRespawn(), gameOver);
         return true;
     }
 
-    // Host only
-    public void Restart()
+    public Vector3 GetSpawnPosition(int index)
     {
-        if (!IsServer || State.Value != GameState.GameOver) return;
-
-        safeUntil.Clear();
-        Lives.Value = startingLives;
-
-        foreach (var client in NetworkManager.Singleton.ConnectedClientsList)
-        {
-            if (client.PlayerObject == null) continue;
-            client.PlayerObject.GetComponent<PlayerController>().ResetRpc(GetRespawnPosition());
-        }
-
-        GhostAI.ResetAll();
-        OnGameRestarted?.Invoke();
-
-        State.Value = GameState.Playing;
+        return respawnPoints.Length > 0
+            ? respawnPoints[index % respawnPoints.Length].position
+            : Vector3.zero;
     }
 
-    private Vector3 GetRespawnPosition()
+    private Vector3 GetRandomRespawn()
     {
         return respawnPoints.Length > 0
             ? respawnPoints[Random.Range(0, respawnPoints.Length)].position
             : Vector3.zero;
     }
 
-    // Placeholder UI just for a little testing
+    // UI (Placeholder)
+
     private void OnGUI()
     {
         if (!IsSpawned) return;
@@ -108,14 +113,14 @@ public class GameManager : NetworkBehaviour
 
         if (IsServer)
         {
-            if (GUI.Button(new Rect(Screen.width / 2f - 100, Screen.height * 0.5f, 200, 50), "Restart"))
-                Restart();
+            if (GUI.Button(new Rect(Screen.width / 2f - 100, Screen.height * 0.5f, 200, 50), "Back to lobby"))
+                GameFlow.Instance.ReturnToLobby();
         }
         else
         {
             var sub = new GUIStyle(GUI.skin.label) { fontSize = 24, alignment = TextAnchor.MiddleCenter };
             GUI.Label(new Rect(0, Screen.height * 0.5f, Screen.width, 40),
-                "Waiting for the host to restart...", sub);
+                "Waiting for the host...", sub);
         }
     }
 }

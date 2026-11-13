@@ -71,7 +71,7 @@ public class NoiseTracker : MonoBehaviour
         }
     }
 
-    // In the scene window, a yellow spheres shows the noise
+    // Look in the scene window, a yellow spheres shows the noise
     private void OnDrawGizmos()
     {
         Gizmos.color = Color.yellow;

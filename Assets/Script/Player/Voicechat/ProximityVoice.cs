@@ -15,20 +15,13 @@ public class ProximityVoice : MonoBehaviour
         {
             channelName = "voice_" + sessionCode;
 
-            if (VivoxService.Instance == null) return;
             await VivoxService.Instance.InitializeAsync();
 
             if (!VivoxService.Instance.IsLoggedIn)
                 await VivoxService.Instance.LoginAsync(new LoginOptions());
 
-            // Wait until the local player has spawned
-            while (NetworkManager.Singleton.LocalClient?.PlayerObject == null)
-                await Awaitable.NextFrameAsync();
-            localPlayer = NetworkManager.Singleton.LocalClient.PlayerObject.gameObject;
-
-            var props = new Channel3DProperties();
             await VivoxService.Instance.JoinPositionalChannelAsync(
-                channelName, ChatCapability.AudioOnly, props);
+                channelName, ChatCapability.AudioOnly, new Channel3DProperties());
 
             inChannel = true;
             Debug.Log($"Joined voice channel {channelName}");
@@ -48,10 +41,17 @@ public class ProximityVoice : MonoBehaviour
 
     private void Update()
     {
-        if (!inChannel || localPlayer == null || Time.time < nextPosUpdate) return;
-
-        // Throttle position updates to about 3 per second
+        if (!inChannel || Time.time < nextPosUpdate) return;
         nextPosUpdate = Time.time + 0.3f;
+
+        if (localPlayer == null)
+        {
+            var nm = NetworkManager.Singleton;
+            var obj = nm != null && nm.IsClient ? nm.LocalClient?.PlayerObject : null;
+            if (obj == null) return;
+            localPlayer = obj.gameObject;
+        }
+
         VivoxService.Instance.Set3DPosition(localPlayer, channelName);
     }
 }

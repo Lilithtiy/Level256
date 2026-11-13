@@ -3,6 +3,8 @@ using UnityEngine;
 
 public class GhostSpawner : MonoBehaviour
 {
+    public static GhostSpawner Instance { get; private set; }
+
     [System.Serializable]
     public class GhostSpawn
     {
@@ -12,23 +14,29 @@ public class GhostSpawner : MonoBehaviour
 
     [SerializeField] private GhostSpawn[] ghosts;
 
-    private void Start()
+    private void Awake()
     {
-        NetworkManager.Singleton.OnServerStarted += SpawnGhosts;
+        Instance = this;
     }
 
-    private void OnDestroy()
+    // SERVER ONLY
+    public void SpawnGhosts()
     {
-        if (NetworkManager.Singleton != null)
-            NetworkManager.Singleton.OnServerStarted -= SpawnGhosts;
-    }
+        int count = 0;
 
-    private void SpawnGhosts()
-    {
         foreach (var g in ghosts)
         {
+            if (g.prefab == null || g.point == null)
+            {
+                Debug.LogError("GhostSpawner: a Ghosts entry is missing its Prefab or Point.");
+                continue;
+            }
+
             var ghost = Instantiate(g.prefab, g.point.position, g.point.rotation);
             ghost.GetComponent<NetworkObject>().Spawn();
+            count++;
         }
+
+        Debug.Log($"GhostSpawner: spawned {count} ghosts");
     }
 }
