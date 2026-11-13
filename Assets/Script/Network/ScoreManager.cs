@@ -2,17 +2,17 @@ using Unity.VisualScripting;
 using UnityEngine;
 using Unity.Netcode;
 
-public class GameManager : NetworkBehaviour
+public class ScoreManager : NetworkBehaviour
 {
-    private static GameManager gameManagerInstance;
+    private static ScoreManager scoreManagerInstance;
 
-    public static GameManager gameManager
+    public static ScoreManager scoreManager
     {
         get
         {
-            if (gameManagerInstance != null)
+            if (scoreManagerInstance != null)
             {
-                return gameManagerInstance;
+                return scoreManagerInstance;
             }
             return null;
         }
@@ -20,13 +20,13 @@ public class GameManager : NetworkBehaviour
 
     private void Awake()
     {
-        if (gameManagerInstance != null && gameManagerInstance != this)
+        if (scoreManagerInstance != null && scoreManagerInstance != this)
         {
             Destroy(this.gameObject);
         }
         else
         {
-            gameManagerInstance = this;
+            scoreManagerInstance = this;
         }
     }
 

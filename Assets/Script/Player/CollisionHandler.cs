@@ -6,13 +6,13 @@ using Unity.VisualScripting;
 
 public class CollisionHandler : NetworkBehaviour
 {
-    private GameManager gameManager;
+    private ScoreManager scoreManager;
 
     public override void OnNetworkSpawn()
     {
         if (!IsServer) { return; }
 
-        gameManager = GameManager.gameManager;
+        scoreManager = ScoreManager.scoreManager;
     }
 
     public void HandleDotCollision(int dotValue, int scoreValue, NetworkObject dotNetworkObject)
@@ -40,8 +40,8 @@ public class CollisionHandler : NetworkBehaviour
         if (Vector3.Distance(transform.position, dot.transform.position) >= 3f) { return; }
 
 
-        gameManager.UpdateElectricityScore(dotValue);
-        gameManager.UpdateHighScore(scoreValue);
+        scoreManager.UpdateElectricityScore(dotValue);
+        scoreManager.UpdateHighScore(scoreValue);
 
         
         dot.Despawn(true);

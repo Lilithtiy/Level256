@@ -1,6 +1,7 @@
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using System.Collections;
 
 [RequireComponent(typeof(CharacterController))]
 public class PlayerController : NetworkBehaviour
@@ -34,6 +35,18 @@ public class PlayerController : NetworkBehaviour
     private Vector2 lookInput;
     private float xRotation = 0f;
 
+    [Header("Catch Moment")]
+    [SerializeField] private float turnSeconds = 0.25f;
+    [SerializeField] private float holdSeconds = 1.0f;
+    [SerializeField] private float fadeSeconds = 0.6f;
+    [SerializeField] private float maxFlash = 0.7f;
+    [SerializeField] private AudioClip catchClip;
+    private bool isCaught;
+    private float flashAlpha;
+    private Coroutine catchRoutine;
+
+    private bool wasGameOver;
+
     private AudioListener audioListener;
 
     private readonly NetworkVariable<bool> isCrouching = new(
@@ -43,6 +56,8 @@ public class PlayerController : NetworkBehaviour
 
     private CharacterController controller;
     private float verticalVelocity;
+
+    public bool IsCrouching => isCrouching.Value;
 
     private void Awake()
     {
@@ -93,12 +108,23 @@ public class PlayerController : NetworkBehaviour
     {
         if (!IsOwner) return;
 
+        bool gameOver = ScoreManager.Instance != null && ScoreManager.Instance.State.Value == GameState.GameOver;
+
+        if (gameOver != wasGameOver)
+        {
+            wasGameOver = gameOver;
+            SetCursorLocked(!gameOver); // free the mouse for the restart button, and re-lock after restart
+        }
+        if (gameOver) return;
+
         if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
             SetCursorLocked(false);
 
         if (Cursor.lockState != CursorLockMode.Locked &&
             Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
             SetCursorLocked(true);
+
+        if (isCaught) return;
 
         bool crouching = crouchAction.action.IsPressed();
         if (crouching != isCrouching.Value)
@@ -178,5 +204,90 @@ public class PlayerController : NetworkBehaviour
     {
         Cursor.lockState = locked ? CursorLockMode.Locked : CursorLockMode.None;
         Cursor.visible = !locked;
+    }
+
+    [Rpc(SendTo.Owner)]
+    public void CaughtRpc(Vector3 ghostPosition, Vector3 respawnPosition, bool gameOver)
+    {
+        if (catchRoutine != null) StopCoroutine(catchRoutine);
+        catchRoutine = StartCoroutine(CatchRoutine(ghostPosition, respawnPosition, gameOver));
+    }
+
+    [Rpc(SendTo.Owner)]
+    public void ResetRpc(Vector3 position)
+    {
+        if (catchRoutine != null) StopCoroutine(catchRoutine);
+        catchRoutine = null;
+        isCaught = false;
+        flashAlpha = 0f;
+
+        controller.enabled = false;
+        transform.position = position;
+        controller.enabled = true;
+        verticalVelocity = 0f;
+    }
+
+    private IEnumerator CatchRoutine(Vector3 ghostPos, Vector3 respawnPos, bool gameOver)
+    {
+        isCaught = true;
+
+        if (catchClip != null)
+            AudioSource.PlayClipAtPoint(catchClip, cameraTransform.position);
+
+        // Work out where to look, so the body yaw and camera pitch
+        Vector3 flat = ghostPos - transform.position;
+        flat.y = 0f;
+
+        Quaternion startBody = transform.rotation;
+        Quaternion endBody = flat.sqrMagnitude > 0.01f ? Quaternion.LookRotation(flat) : startBody;
+
+        Vector3 toGhost = (ghostPos + Vector3.up) - cameraTransform.position;
+        float flatDist = new Vector2(toGhost.x, toGhost.z).magnitude;
+        float startPitch = xRotation;
+        float endPitch = Mathf.Clamp(Mathf.Atan2(-toGhost.y, flatDist) * Mathf.Rad2Deg, -90f, 90f);
+
+        // 1: its turns toward the ghost while the screen turns red
+        for (float t = 0f; t < turnSeconds; t += Time.deltaTime)
+        {
+            float k = Mathf.SmoothStep(0f, 1f, t / turnSeconds);
+            transform.rotation = Quaternion.Slerp(startBody, endBody, k);
+            xRotation = Mathf.Lerp(startPitch, endPitch, k);
+            cameraTransform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
+            flashAlpha = maxFlash * k;
+            yield return null;
+        }
+        flashAlpha = maxFlash;
+
+        // 2: its hold on the ghost's face
+        yield return new WaitForSeconds(holdSeconds);
+
+        // No lives left than it will stay frozen. (more of a placeholder for now)
+        if (gameOver) yield break;
+
+        // 3: then will teleport away and fade the red out
+        controller.enabled = false;
+        transform.position = respawnPos;
+        controller.enabled = true;
+        verticalVelocity = 0f;
+
+        for (float t = 0f; t < fadeSeconds; t += Time.deltaTime)
+        {
+            flashAlpha = maxFlash * (1f - t / fadeSeconds);
+            yield return null;
+        }
+
+        flashAlpha = 0f;
+        isCaught = false;
+    }
+
+    // Red screen overlay (placeholder for now)
+    private void OnGUI()
+    {
+        if (!IsOwner || flashAlpha <= 0f) return;
+
+        Color old = GUI.color;
+        GUI.color = new Color(0.7f, 0f, 0f, flashAlpha);
+        GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), Texture2D.whiteTexture);
+        GUI.color = old;
     }
 }
