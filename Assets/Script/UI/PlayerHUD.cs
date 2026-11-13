@@ -7,7 +7,7 @@ public class PlayerHUD : MonoBehaviour
     private ProgressBar electricityBar;
     private Label highScoreText;
 
-    private GameManager gameManager;
+    private ScoreManager gameManager;
 
     private void OnEnable()
     {
@@ -36,7 +36,7 @@ public class PlayerHUD : MonoBehaviour
     {
         if(gameManager == null)
         {
-            GameManager potentialGameManager = GameManager.gameManager;
+            ScoreManager potentialGameManager = ScoreManager.scoreManager;
 
             if(potentialGameManager == null || !potentialGameManager.IsSpawned) { return; }
             gameManager = potentialGameManager;

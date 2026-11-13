@@ -6,13 +6,13 @@ using Unity.VisualScripting;
 
 public class CollisionHandler : NetworkBehaviour
 {
-    private GameManager gameManager;
+    private ScoreManager gameManager;
 
     public override void OnNetworkSpawn()
     {
         if (!IsServer) { return; }
 
-        gameManager = GameManager.gameManager;
+        gameManager = ScoreManager.scoreManager;
     }
 
     public void HandleDotCollision(int dotValue, int scoreValue, NetworkObject dotNetworkObject)
