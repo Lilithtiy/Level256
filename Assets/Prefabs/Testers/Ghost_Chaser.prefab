@@ -226,9 +226,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GhostAI
   ShowTopMostFoldoutHeaderGroup: 1
-  speed: 3.5
+  personality: 0
+  aheadDistance: 6
+  shyDistance: 10
   detectRange: 15
-  catchDistance: 1.8
-  stunSeconds: 3
+  eyeHeight: 1.5
+  hearingMultiplier: 1
+  wallMuffle: 0.5
+  investigateSeconds: 6
+  searchRadius: 5
+  speed: 3.5
   wanderRadius: 12
   repathInterval: 0.25
+  catchDistance: 1.8
+  stunSeconds: 3
+  fleeDistance: 10
+  fleeRepathInterval: 0.5
+  ghostRespawnDelay: 5
+  ghostPrefab: {fileID: 6220606879624569045}

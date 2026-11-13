@@ -40,6 +40,7 @@ public class GhostAI : NetworkBehaviour
 
     [Header("Respawning")]
     [SerializeField] private float ghostRespawnDelay = 5f;
+    [SerializeField] private GameObject ghostPrefab;
 
     private NavMeshAgent agent;
     private Vector3 homePosition;
@@ -70,6 +71,11 @@ public class GhostAI : NetworkBehaviour
     public override void OnNetworkDespawn()
     {
         if (IsServer) allGhosts.Remove(this);
+    }
+
+    public void SetRespawnPrefab(GameObject prefab)
+    {
+        ghostPrefab = prefab;
     }
 
     private void Update()
@@ -164,10 +170,15 @@ public class GhostAI : NetworkBehaviour
     {
         if (other.gameObject.CompareTag("Player") && GameManager.Instance.ghostState.Value == GhostState.Exposed)
         {
-            this.NetworkObject.Despawn(true);
+            if (!NetworkObject.IsSpawned)
+            {
+                Debug.LogWarning($"{name}: Ghost collision detected, but NetworkObject isn't spawned.");
+                return;
+            }
 
-            GhostSpawner ghostSpawner = GhostSpawner.Instance;
-            ghostSpawner.RespawnGhost(this.NetworkObject, this.ghostRespawnDelay);
+            GhostSpawner.Instance.RespawnGhost(ghostPrefab, ghostRespawnDelay);
+
+            NetworkObject.Despawn(true);
         }
     }
 
@@ -307,7 +318,7 @@ public class GhostAI : NetworkBehaviour
         foreach (var ghost in allGhosts) ghost.ResetGhost();
     }
 
-    private void ResetGhost()
+    public void ResetGhost()
     {
         stunnedUntil = 0f;
         investigateUntil = 0f;
