@@ -3,6 +3,7 @@ using Unity.Netcode;
 using UnityEngine;
 
 public enum GameState { Playing, GameOver }
+public enum GhostState { Normal, Exposed }
 
 public class GameManager : NetworkBehaviour
 {
@@ -22,6 +23,14 @@ public class GameManager : NetworkBehaviour
         NetworkVariableReadPermission.Everyone,
         NetworkVariableWritePermission.Server);
 
+    public NetworkVariable<GhostState> ghostState = new(
+        GhostState.Normal,
+        NetworkVariableReadPermission.Everyone,
+        NetworkVariableWritePermission.Server);
+
+    [SerializeField] private float ghostExposedDuration = 10f;
+    private float ghostExposedTimer = 0f;
+
     // SERVER ONLY. its fires when the round starts (and the ghost spawner listens to this).
     public event System.Action OnRoundStarted;
 
@@ -40,6 +49,7 @@ public class GameManager : NetworkBehaviour
         safeUntil.Clear();
         Lives.Value = startingLives;
         State.Value = GameState.Playing;
+        ghostState.Value = GhostState.Normal;
 
         if (GhostSpawner.Instance != null)
             GhostSpawner.Instance.SpawnGhosts();
@@ -121,6 +131,28 @@ public class GameManager : NetworkBehaviour
             var sub = new GUIStyle(GUI.skin.label) { fontSize = 24, alignment = TextAnchor.MiddleCenter };
             GUI.Label(new Rect(0, Screen.height * 0.5f, Screen.width, 40),
                 "Waiting for the host...", sub);
+        }
+    }
+
+    public void ActivateGhostExposedState()
+    {
+        if (!IsServer) return;
+        ghostState.Value = GhostState.Exposed;
+        Debug.Log("Ghosts are now exposed!");
+        ghostExposedTimer = ghostExposedDuration;
+    }
+
+    private void FixedUpdate()
+    {
+        if (ghostExposedTimer > 0 && ghostState.Value == GhostState.Exposed)
+        {
+            ghostExposedTimer -= Time.fixedDeltaTime;
+            if (ghostExposedTimer <= 0)
+            {
+                ghostState.Value = GhostState.Normal;
+                ghostExposedTimer = 0;
+                Debug.Log("Ghosts are no longer exposed!");
+            }
         }
     }
 }

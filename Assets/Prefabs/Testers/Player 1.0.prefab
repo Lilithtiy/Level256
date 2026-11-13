@@ -241,6 +241,11 @@ MonoBehaviour:
   standEyeHeight: 0.65
   crouchEyeHeight: 1
   mouseSensitivity: 1
+  turnSeconds: 0.25
+  holdSeconds: 1
+  fadeSeconds: 0.6
+  maxFlash: 0.7
+  catchClip: {fileID: 0}
 --- !u!114 &-6588418179630385436
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -416,7 +421,7 @@ MonoBehaviour:
     m_Bits: 1
   m_VolumeTrigger: {fileID: 0}
   m_VolumeFrameworkUpdateModeOption: 2
-  m_RenderPostProcessing: 0
+  m_RenderPostProcessing: 1
   m_Antialiasing: 0
   m_AntialiasingQuality: 2
   m_StopNaN: 0

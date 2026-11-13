@@ -39,4 +39,10 @@ public class GhostSpawner : MonoBehaviour
 
         Debug.Log($"GhostSpawner: spawned {count} ghosts");
     }
+
+    public void RespawnGhost(NetworkObject ghost, float delay)
+    {
+        //furthest point from the player(s) current position
+        
+    }
 }

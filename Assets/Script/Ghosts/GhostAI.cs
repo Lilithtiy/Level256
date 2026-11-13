@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Unity.Netcode;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -31,6 +32,14 @@ public class GhostAI : NetworkBehaviour
     [Header("Catching")]
     [SerializeField] private float catchDistance = 1.8f;
     [SerializeField] private float stunSeconds = 3f;
+
+    [Header("Fleeing")]
+    [SerializeField] private float fleeDistance = 10f;
+    [SerializeField] private float fleeRepathInterval = 0.5f;
+    private float nextFleeRepath;
+
+    [Header("Respawning")]
+    [SerializeField] private float ghostRespawnDelay = 5f;
 
     private NavMeshAgent agent;
     private Vector3 homePosition;
@@ -65,55 +74,100 @@ public class GhostAI : NetworkBehaviour
 
     private void Update()
     {
-        if (GameManager.Instance != null && GameManager.Instance.State.Value != GameState.Playing)
+        //NORMAL STATE
+        if (GameManager.Instance.ghostState.Value == GhostState.Normal)
         {
-            agent.isStopped = true;
-            return;
-        }
+            if (GameManager.Instance != null && GameManager.Instance.State.Value != GameState.Playing)
+            {
+                agent.isStopped = true;
+                return;
+            }
 
-        if (Time.time < stunnedUntil) return;
-        if (agent.isStopped) agent.isStopped = false;
+            if (Time.time < stunnedUntil) return;
+            if (agent.isStopped) agent.isStopped = false;
 
-        if (Time.time < nextRepath) return;
-        nextRepath = Time.time + repathInterval;
+            if (Time.time < nextRepath) return;
+            nextRepath = Time.time + repathInterval;
 
-        Transform target = FindNearestPlayer(out float distance, out ulong clientId);
-        bool sees = target != null && distance <= detectRange && HasLineOfSight(target.position);
+            Transform target = FindNearestPlayer(out float distance, out ulong clientId);
+            bool sees = target != null && distance <= detectRange && HasLineOfSight(target.position);
 
-        // 1. for catch
-        if (sees && distance <= catchDistance &&
-            GameManager.Instance.TryCatchPlayer(clientId, transform.position))
-        {
-            stunnedUntil = Time.time + stunSeconds;
-            investigateUntil = 0f;
-            agent.ResetPath();
-            agent.isStopped = true;
-            return;
-        }
+            // 1. for catch
+            if (sees && distance <= catchDistance &&
+                GameManager.Instance.TryCatchPlayer(clientId, transform.position))
+            {
+                stunnedUntil = Time.time + stunSeconds;
+                investigateUntil = 0f;
+                agent.ResetPath();
+                agent.isStopped = true;
+                return;
+            }
 
-        // 2: for sight, so chase with this ghost's personality
-        if (sees)
-        {
-            investigateUntil = 0f;
-            agent.SetDestination(GetChaseDestination(target, distance));
+            // 2: for sight, so chase with this ghost's personality
+            if (sees)
+            {
+                investigateUntil = 0f;
+                agent.SetDestination(GetChaseDestination(target, distance));
+            }
+            // 3: for Hearing, so go to where the noise came from
+            else if (TryHearNoise(out Vector3 heardPos))
+            {
+                investigatePos = heardPos;
+                investigateUntil = Time.time + investigateSeconds;
+                agent.SetDestination(SnapToNavMesh(heardPos, heardPos));
+            }
+            // 4: for reached the last heard spot, so search the area for a while
+            else if (Time.time < investigateUntil)
+            {
+                if (!agent.pathPending && agent.remainingDistance < 0.5f)
+                    SearchAround(investigatePos);
+            }
+            // 5: for nothing going on, so just wander
+            else if (!agent.pathPending && (!agent.hasPath || agent.remainingDistance < 0.5f))
+            {
+                Wander();
+            }
         }
-        // 3: for Hearing, so go to where the noise came from
-        else if (TryHearNoise(out Vector3 heardPos))
+        //EXPOSED STATE
+        else if (GameManager.Instance.ghostState.Value == GhostState.Exposed)
         {
-            investigatePos = heardPos;
-            investigateUntil = Time.time + investigateSeconds;
-            agent.SetDestination(SnapToNavMesh(heardPos, heardPos));
+            if(Time.time < nextFleeRepath) { return; }
+
+            nextFleeRepath = Time.time + fleeRepathInterval;
+
+            Transform target = FindNearestPlayer(out _, out _);
+
+            if (target != null)
+            {
+                FleeFromPlayer(target.position);
+            }
         }
-        // 4: for reached the last heard spot, so search the area for a while
-        else if (Time.time < investigateUntil)
+    }
+
+    // Fleeing
+    public void FleeFromPlayer(Vector3 playerPosition)
+    {
+        Vector3 directionAway = transform.position - playerPosition;
+        directionAway.y = 0f;
+
+        directionAway.Normalize();
+
+        Vector3 fleePosition = transform.position + directionAway * fleeDistance;
+
+        Vector3 destination = SnapToNavMesh(fleePosition, transform.position);
+
+        agent.SetDestination(destination);
+    }
+
+    //Collision Handling
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.gameObject.CompareTag("Player") && GameManager.Instance.ghostState.Value == GhostState.Exposed)
         {
-            if (!agent.pathPending && agent.remainingDistance < 0.5f)
-                SearchAround(investigatePos);
-        }
-        // 5: for nothing going on, so just wander
-        else if (!agent.pathPending && (!agent.hasPath || agent.remainingDistance < 0.5f))
-        {
-            Wander();
+            this.NetworkObject.Despawn(true);
+
+            GhostSpawner ghostSpawner = GhostSpawner.Instance;
+            ghostSpawner.RespawnGhost(this.NetworkObject, this.ghostRespawnDelay);
         }
     }
 
