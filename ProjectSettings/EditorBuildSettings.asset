@@ -17,6 +17,15 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Testers/GhostTest.unity
     guid: be35f3bb192de674793694a72cc4014c
+  - enabled: 1
+    path: Assets/Scenes/Bootstrap.unity
+    guid: 4654413eed2981e48bc4795d1b521119
+  - enabled: 1
+    path: Assets/Scenes/Level256.unity
+    guid: a4781b3852b564841ac6e7beff5dc695
+  - enabled: 1
+    path: Assets/Scenes/Lobby.unity
+    guid: 9763c7a0cae53c645bfeb40bb73a693d
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0

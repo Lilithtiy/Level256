@@ -65,7 +65,7 @@ public class GhostAI : NetworkBehaviour
 
     private void Update()
     {
-        if (GameManager.Instance != null && GameManager.Instance.State.Value == GameState.GameOver)
+        if (GameManager.Instance != null && GameManager.Instance.State.Value != GameState.Playing)
         {
             agent.isStopped = true;
             return;
