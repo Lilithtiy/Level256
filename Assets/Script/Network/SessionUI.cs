@@ -8,12 +8,18 @@ public class SessionUI : MonoBehaviour
     private string status = "Not connected";
     private ISession session;
 
+    public static string JoinCode;
+
     private async void HostGame()
     {
         try
         {
             var options = new SessionOptions { MaxPlayers = 4 }.WithRelayNetwork();
             session = await MultiplayerService.Instance.CreateSessionAsync(options);
+
+            JoinCode = session.Code;
+            GameFlow.Instance.OpenLobby();
+
             GetComponent<ProximityVoice>().StartVoice(session.Code);
             status = $"Hosting. Join code: {session.Code}";
             Debug.Log($"Join code: {session.Code}");
