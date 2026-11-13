@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 1036118623077061490}
   - component: {fileID: 3050358534253868851}
   - component: {fileID: -7505943287603854569}
+  - component: {fileID: 5764462272341419548}
   m_Layer: 0
   m_Name: Ghost_Chaser
   m_TagString: Untagged
@@ -226,9 +227,30 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GhostAI
   ShowTopMostFoldoutHeaderGroup: 1
-  speed: 3.5
+  personality: 0
+  aheadDistance: 6
+  shyDistance: 10
   detectRange: 15
-  catchDistance: 1.8
-  stunSeconds: 3
+  eyeHeight: 1.5
+  hearingMultiplier: 1
+  wallMuffle: 0.5
+  investigateSeconds: 6
+  searchRadius: 5
+  speed: 3.5
   wanderRadius: 12
   repathInterval: 0.25
+  catchDistance: 1.8
+  stunSeconds: 3
+--- !u!114 &5764462272341419548
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6220606879624569045}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8a19729527779c245b88c142ca980085, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MarkerTarget
+  type: 0

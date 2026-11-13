@@ -135,6 +135,9 @@ GameObject:
   - component: {fileID: 6346207085508567150}
   - component: {fileID: -6588418179630385436}
   - component: {fileID: 1744214696452602798}
+  - component: {fileID: -772789318436837659}
+  - component: {fileID: -6985499139352194059}
+  - component: {fileID: -321504092153350421}
   m_Layer: 0
   m_Name: Player 1.0
   m_TagString: Player
@@ -238,7 +241,14 @@ MonoBehaviour:
   visual: {fileID: 0}
   standHeight: 2
   crouchHeight: 1
+  standEyeHeight: 1.7
+  crouchEyeHeight: 1
   mouseSensitivity: 1
+  turnSeconds: 0.25
+  holdSeconds: 1
+  fadeSeconds: 0.6
+  maxFlash: 0.7
+  catchClip: {fileID: 0}
 --- !u!114 &-6588418179630385436
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -302,6 +312,52 @@ MonoBehaviour:
     m_Bits: 0
   item: {fileID: 0}
   pickupPoint: {fileID: 0}
+--- !u!114 &-772789318436837659
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5990630632534819751}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: da2f0876b5feb734492318b46c62e794, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerRole
+  ShowTopMostFoldoutHeaderGroup: 1
+  Current:
+    UpdateTraits:
+      MinSecondsBetweenUpdates: 0
+      MaxSecondsBetweenUpdates: 0
+    m_InternalValue: 0
+--- !u!114 &-6985499139352194059
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5990630632534819751}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e913f5f49e1276c4686138255436498e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RoleHud
+  maxPelletMarkers: 6
+  bannerSeconds: 5
+  edgeMargin: 40
+--- !u!114 &-321504092153350421
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5990630632534819751}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8a19729527779c245b88c142ca980085, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MarkerTarget
+  type: 1
 --- !u!1 &6997019822837675872
 GameObject:
   m_ObjectHideFlags: 0
