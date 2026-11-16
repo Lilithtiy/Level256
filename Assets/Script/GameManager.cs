@@ -29,7 +29,10 @@ public class GameManager : NetworkBehaviour
         NetworkVariableWritePermission.Server);
 
     [SerializeField] private float ghostExposedDuration = 10f;
-    private float ghostExposedTimer = 0f;
+    public NetworkVariable<float> ghostExposedTimer = new(
+        0f, 
+        NetworkVariableReadPermission.Everyone, 
+        NetworkVariableWritePermission.Server);
 
     // SERVER ONLY. its fires when the round starts (and the ghost spawner listens to this).
     public event System.Action OnRoundStarted;
@@ -142,18 +145,18 @@ public class GameManager : NetworkBehaviour
         if (!IsServer) return;
         ghostState.Value = GhostState.Exposed;
         Debug.Log("Ghosts are now exposed!");
-        ghostExposedTimer = ghostExposedDuration;
+        ghostExposedTimer.Value = ghostExposedDuration;
     }
 
     private void FixedUpdate()
     {
-        if (ghostExposedTimer > 0 && ghostState.Value == GhostState.Exposed)
+        if (ghostExposedTimer.Value > 0 && ghostState.Value == GhostState.Exposed)
         {
-            ghostExposedTimer -= Time.fixedDeltaTime;
-            if (ghostExposedTimer <= 0)
+            ghostExposedTimer.Value -= Time.fixedDeltaTime;
+            if (ghostExposedTimer.Value <= 0)
             {
                 ghostState.Value = GhostState.Normal;
-                ghostExposedTimer = 0;
+                ghostExposedTimer.Value = 0;
                 Debug.Log("Ghosts are no longer exposed!");
             }
         }
