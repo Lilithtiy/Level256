@@ -138,7 +138,6 @@ GameObject:
   - component: {fileID: -6985499139352194059}
   - component: {fileID: -321504092153350421}
   - component: {fileID: 1983003114164123270}
-  - component: {fileID: 8076066032339242558}
   m_Layer: 0
   m_Name: Player 1.0
   m_TagString: Player
@@ -242,7 +241,7 @@ MonoBehaviour:
   visual: {fileID: 0}
   standHeight: 2
   crouchHeight: 1
-  standEyeHeight: 1.7
+  standEyeHeight: 0.75
   crouchEyeHeight: 1
   mouseSensitivity: 1
   turnSeconds: 0.25
@@ -355,21 +354,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PickUpSystem
   ShowTopMostFoldoutHeaderGroup: 1
---- !u!114 &8076066032339242558
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5990630632534819751}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e7e799cbfca5cdb499f9f34a0900dab7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerInteractor
-  ShowTopMostFoldoutHeaderGroup: 1
-  interactAction: {fileID: 1781555164194001046, guid: 052faaac586de48259a63d0c4782560b, type: 3}
-  interactRange: 3
 --- !u!1 &6997019822837675872
 GameObject:
   m_ObjectHideFlags: 0
