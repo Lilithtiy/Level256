@@ -1,0 +1,8 @@
+.electricity-bar .unity-progress-bar__container {
+    height: auto;
+    min-height: 100%;
+}
+
+.electricity-bar .unity-progress-bar__progress {
+    background-color: rgb(255, 226, 0);
+}
