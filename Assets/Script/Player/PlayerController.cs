@@ -47,6 +47,10 @@ public class PlayerController : NetworkBehaviour
 
     private bool wasFrozen;
 
+    private bool inputLocked;
+
+    public bool IsCaught => isCaught;
+
     private AudioListener audioListener;
 
     private readonly NetworkVariable<bool> isCrouching = new(
@@ -112,6 +116,8 @@ public class PlayerController : NetworkBehaviour
             SetCursorLocked(!frozen);
         }
         if (frozen) return;
+
+       if (inputLocked) return;
 
         if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
             SetCursorLocked(false);
@@ -285,5 +291,16 @@ public class PlayerController : NetworkBehaviour
         GUI.color = new Color(0.7f, 0f, 0f, flashAlpha);
         GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), Texture2D.whiteTexture);
         GUI.color = old;
+    }
+
+
+    public void SetInputLocked(bool locked)
+    {
+        inputLocked = locked;
+
+        // Don't grab the mouse back if the game is over, the menu buttons need it
+        bool playing = GameManager.Instance == null ||
+                    GameManager.Instance.State.Value == GameState.Playing;
+        SetCursorLocked(!locked && playing);
     }
 }

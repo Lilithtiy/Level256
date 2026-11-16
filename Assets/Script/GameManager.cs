@@ -57,6 +57,9 @@ public class GameManager : NetworkBehaviour
             Debug.LogWarning("GameManager: there is no GhostSpawner in the scene, so NO ghosts will spawn.");
 
         OnRoundStarted?.Invoke();   // here for other systems
+
+        if (TaskManager.Instance != null)
+             TaskManager.Instance.SetupRound();
     }
 
     // its called by ghosts. Server only. and returns true if the catch counted.
