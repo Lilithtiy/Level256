@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
-public enum GameState { Playing, GameOver }
+public enum GameState { Playing, GameOver, Won }
 public enum GhostState { Normal, Exposed }
 
 public class GameManager : NetworkBehaviour
@@ -31,7 +31,6 @@ public class GameManager : NetworkBehaviour
     [SerializeField] private float ghostExposedDuration = 10f;
     private float ghostExposedTimer = 0f;
 
-    // SERVER ONLY. its fires when the round starts (and the ghost spawner listens to this).
     public event System.Action OnRoundStarted;
 
     private readonly Dictionary<ulong, float> safeUntil = new();
@@ -41,7 +40,6 @@ public class GameManager : NetworkBehaviour
         Instance = this;
     }
 
-    // its called by GameFlow once the players have been spawned
     public void BeginRound()
     {
         if (!IsServer) return;
@@ -56,13 +54,12 @@ public class GameManager : NetworkBehaviour
         else
             Debug.LogWarning("GameManager: there is no GhostSpawner in the scene, so NO ghosts will spawn.");
 
-        OnRoundStarted?.Invoke();   // here for other systems
+        OnRoundStarted?.Invoke();
 
         if (TaskManager.Instance != null)
              TaskManager.Instance.SetupRound();
     }
 
-    // its called by ghosts. Server only. and returns true if the catch counted.
     public bool TryCatchPlayer(ulong clientId, Vector3 ghostPosition)
     {
         if (!IsServer || State.Value != GameState.Playing || Lives.Value <= 0) return false;
@@ -100,16 +97,27 @@ public class GameManager : NetworkBehaviour
             : Vector3.zero;
     }
 
-    // UI (Placeholder)
+    public void Win()
+    {
+        if (!IsServer || State.Value != GameState.Playing) return;
 
+        State.Value = GameState.Won;
+        Debug.Log("YOU ESCAPED!");
+    }
+
+    // UI (Placeholder)
     private void OnGUI()
     {
         if (!IsSpawned) return;
 
         GUI.Label(new Rect(Screen.width - 160, 10, 150, 30), $"Lives: {Lives.Value}");
 
-        if (State.Value != GameState.GameOver) return;
+        if (State.Value == GameState.GameOver) DrawEndScreen("GAME OVER", Color.red);
+        else if (State.Value == GameState.Won) DrawEndScreen("YOU ESCAPED!", Color.green);
+    }
 
+    private void DrawEndScreen(string headline, Color color)
+    {
         Color old = GUI.color;
         GUI.color = new Color(0f, 0f, 0f, 0.6f);
         GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), Texture2D.whiteTexture);
@@ -121,8 +129,8 @@ public class GameManager : NetworkBehaviour
             fontStyle = FontStyle.Bold,
             alignment = TextAnchor.MiddleCenter
         };
-        title.normal.textColor = Color.red;
-        GUI.Label(new Rect(0, Screen.height * 0.3f, Screen.width, 100), "GAME OVER", title);
+        title.normal.textColor = color;
+        GUI.Label(new Rect(0, Screen.height * 0.3f, Screen.width, 100), headline, title);
 
         if (IsServer)
         {
@@ -132,8 +140,7 @@ public class GameManager : NetworkBehaviour
         else
         {
             var sub = new GUIStyle(GUI.skin.label) { fontSize = 24, alignment = TextAnchor.MiddleCenter };
-            GUI.Label(new Rect(0, Screen.height * 0.5f, Screen.width, 40),
-                "Waiting for the host...", sub);
+            GUI.Label(new Rect(0, Screen.height * 0.5f, Screen.width, 40), "Waiting for the host...", sub);
         }
     }
 
