@@ -12,6 +12,13 @@ public class NoiseTracker : MonoBehaviour
         public float radius;
     }
 
+    private struct TimedNoise
+    {
+        public Vector3 position;
+        public float radius;
+        public float expiresAt;
+    }
+
     [Header("Noise radius (metres)")]
     [SerializeField] private float crouchNoise = 3f;
     [SerializeField] private float walkNoise = 8f;
@@ -25,6 +32,9 @@ public class NoiseTracker : MonoBehaviour
 
     private readonly Dictionary<ulong, Vector3> lastPositions = new();
     private readonly Dictionary<ulong, float> smoothedSpeeds = new();
+
+    private readonly List<TimedNoise> external = new();
+
 
     private void Awake()
     {
@@ -69,6 +79,24 @@ public class NoiseTracker : MonoBehaviour
             if (radius > 0f)
                 Noises.Add(new Noise { position = pos, radius = radius });
         }
+    }
+
+    // For noise that isn't footsteps, like repairing something.
+    public void EmitNoise(Vector3 position, float radius, float seconds)
+    {
+        for (int i = 0; i < external.Count; i++)
+        {
+            if ((external[i].position - position).sqrMagnitude < 0.01f)
+            {
+                var t = external[i];
+                t.radius = radius;
+                t.expiresAt = Time.time + seconds;
+                external[i] = t;
+                return;
+            }
+        }
+
+        external.Add(new TimedNoise { position = position, radius = radius, expiresAt = Time.time + seconds });
     }
 
     // Look in the scene window, a yellow spheres shows the noise

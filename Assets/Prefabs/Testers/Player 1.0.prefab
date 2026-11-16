@@ -134,10 +134,11 @@ GameObject:
   - component: {fileID: -2991990053232309986}
   - component: {fileID: 6346207085508567150}
   - component: {fileID: -6588418179630385436}
-  - component: {fileID: 1744214696452602798}
   - component: {fileID: -772789318436837659}
   - component: {fileID: -6985499139352194059}
   - component: {fileID: -321504092153350421}
+  - component: {fileID: 1983003114164123270}
+  - component: {fileID: 8076066032339242558}
   m_Layer: 0
   m_Name: Player 1.0
   m_TagString: Player
@@ -295,23 +296,6 @@ MonoBehaviour:
   SwitchTransformSpaceWhenParented: 0
   Interpolate: 1
   SlerpPosition: 0
---- !u!114 &1744214696452602798
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5990630632534819751}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cb2206df844589342a0efc7497ed02ba, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PickUpSystem
-  pickupMask:
-    serializedVersion: 2
-    m_Bits: 0
-  item: {fileID: 0}
-  pickupPoint: {fileID: 0}
 --- !u!114 &-772789318436837659
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -358,6 +342,34 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MarkerTarget
   type: 1
+--- !u!114 &1983003114164123270
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5990630632534819751}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 70c036b29cf23ef47bfc235e9ed42e1b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PickUpSystem
+  ShowTopMostFoldoutHeaderGroup: 1
+--- !u!114 &8076066032339242558
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5990630632534819751}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e7e799cbfca5cdb499f9f34a0900dab7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerInteractor
+  ShowTopMostFoldoutHeaderGroup: 1
+  interactAction: {fileID: 1781555164194001046, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  interactRange: 3
 --- !u!1 &6997019822837675872
 GameObject:
   m_ObjectHideFlags: 0
@@ -386,7 +398,7 @@ Transform:
   m_GameObject: {fileID: 6997019822837675872}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.5, z: 0.2}
+  m_LocalPosition: {x: 0, y: 0, z: 0.2}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -474,7 +486,7 @@ MonoBehaviour:
     m_Bits: 1
   m_VolumeTrigger: {fileID: 0}
   m_VolumeFrameworkUpdateModeOption: 2
-  m_RenderPostProcessing: 0
+  m_RenderPostProcessing: 1
   m_Antialiasing: 0
   m_AntialiasingQuality: 2
   m_StopNaN: 0
