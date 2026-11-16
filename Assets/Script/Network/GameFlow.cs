@@ -78,6 +78,7 @@ public class GameFlow : MonoBehaviour
         foreach (ulong clientId in clientsCompleted)
             SpawnPlayer(clientId, index++);
 
+        PlayerRole.AssignAll();
         GameManager.Instance.BeginRound();
     }
 
@@ -87,13 +88,15 @@ public class GameFlow : MonoBehaviour
         if (SceneManager.GetActiveScene().name != gameSceneName) return;
         if (GameManager.Instance == null) return;
 
-        SpawnPlayer(clientId, Random.Range(0, 4));
+        var player = SpawnPlayer(clientId, Random.Range(0, 4));
+        PlayerRole.AssignUnused(player.GetComponent<PlayerRole>());
     }
 
-    private void SpawnPlayer(ulong clientId, int index)
+    private GameObject SpawnPlayer(ulong clientId, int index)
     {
         Vector3 pos = GameManager.Instance.GetSpawnPosition(index);
         var player = Instantiate(playerPrefab, pos, Quaternion.identity);
         player.GetComponent<NetworkObject>().SpawnAsPlayerObject(clientId, true);
+        return player;
     }
 }
