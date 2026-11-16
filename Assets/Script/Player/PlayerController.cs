@@ -164,7 +164,7 @@ public class PlayerController : NetworkBehaviour
         float h = crouching ? crouchHeight : standHeight;
 
         controller.height = h;
-        controller.center = new Vector3(0f, h * 0.5f, 0f);
+        //controller.center = new Vector3(0f, h * 0.5f, 0f);
 
         if (visual != null)
         {
