@@ -80,15 +80,19 @@ public class GhostAI : NetworkBehaviour
 
     private void Update()
     {
-        //NORMAL STATE
-        if (GameManager.Instance.ghostState.Value == GhostState.Normal)
-        {
-            if (GameManager.Instance != null && GameManager.Instance.State.Value != GameState.Playing)
-            {
-                agent.isStopped = true;
-                return;
-            }
+        var gm = GameManager.Instance;
+        if (gm == null) return;
 
+        // if it game over or escaped, every ghost stands still, in every state
+        if (gm.State.Value != GameState.Playing)
+        {
+            agent.isStopped = true;
+            return;
+        }
+
+        // Normal state
+        if (gm.ghostState.Value == GhostState.Normal)
+        {
             if (Time.time < stunnedUntil) return;
             if (agent.isStopped) agent.isStopped = false;
 
@@ -98,9 +102,9 @@ public class GhostAI : NetworkBehaviour
             Transform target = FindNearestPlayer(out float distance, out ulong clientId);
             bool sees = target != null && distance <= detectRange && HasLineOfSight(target.position);
 
-            // 1. for catch
+            // 1: catch
             if (sees && distance <= catchDistance &&
-                GameManager.Instance.TryCatchPlayer(clientId, transform.position))
+                gm.TryCatchPlayer(clientId, transform.position))
             {
                 stunnedUntil = Time.time + stunSeconds;
                 investigateUntil = 0f;
@@ -109,45 +113,57 @@ public class GhostAI : NetworkBehaviour
                 return;
             }
 
-            // 2: for sight, so chase with this ghost's personality
+            // 2: sight: chase with this ghost's personality
             if (sees)
             {
                 investigateUntil = 0f;
                 agent.SetDestination(GetChaseDestination(target, distance));
             }
-            // 3: for Hearing, so go to where the noise came from
+            // 3: hearing: go to where the noise came from
             else if (TryHearNoise(out Vector3 heardPos))
             {
                 investigatePos = heardPos;
                 investigateUntil = Time.time + investigateSeconds;
                 agent.SetDestination(SnapToNavMesh(heardPos, heardPos));
             }
-            // 4: for reached the last heard spot, so search the area for a while
+            // 4: reached the last heard spot: search the area for a while
             else if (Time.time < investigateUntil)
             {
                 if (!agent.pathPending && agent.remainingDistance < 0.5f)
                     SearchAround(investigatePos);
             }
-            // 5: for nothing going on, so just wander
+            // 5: nothing going on: wander
             else if (!agent.pathPending && (!agent.hasPath || agent.remainingDistance < 0.5f))
             {
                 Wander();
             }
         }
-        //EXPOSED STATE
-        else if (GameManager.Instance.ghostState.Value == GhostState.Exposed)
+        // Exposed state
+        else
         {
-            if(Time.time < nextFleeRepath) { return; }
+            if (agent.isStopped) agent.isStopped = false;
 
+            Transform nearest = FindNearestPlayer(out float d, out _);
+
+            if (nearest != null && d <= catchDistance)
+            {
+                EatGhost();
+                return;
+            }
+
+            if (Time.time < nextFleeRepath) return;
             nextFleeRepath = Time.time + fleeRepathInterval;
 
-            Transform target = FindNearestPlayer(out _, out _);
-
-            if (target != null)
-            {
-                FleeFromPlayer(target.position);
-            }
+            if (nearest != null) FleeFromPlayer(nearest.position);
         }
+    }
+
+    private void EatGhost()
+    {
+        if (!NetworkObject.IsSpawned) return;
+
+        GhostSpawner.Instance.RespawnGhost(ghostPrefab, ghostRespawnDelay);
+        NetworkObject.Despawn(true);
     }
 
     // Fleeing
@@ -165,25 +181,7 @@ public class GhostAI : NetworkBehaviour
         agent.SetDestination(destination);
     }
 
-    //Collision Handling
-    private void OnTriggerEnter(Collider other)
-    {
-        if (other.gameObject.CompareTag("Player") && GameManager.Instance.ghostState.Value == GhostState.Exposed)
-        {
-            if (!NetworkObject.IsSpawned)
-            {
-                Debug.LogWarning($"{name}: Ghost collision detected, but NetworkObject isn't spawned.");
-                return;
-            }
-
-            GhostSpawner.Instance.RespawnGhost(ghostPrefab, ghostRespawnDelay);
-
-            NetworkObject.Despawn(true);
-        }
-    }
-
     // Hearing
-
     private bool TryHearNoise(out Vector3 heardPos)
     {
         heardPos = default;
@@ -227,7 +225,6 @@ public class GhostAI : NetworkBehaviour
     }
 
     // Personalities for the sweet little ghosts
-
     private Vector3 GetChaseDestination(Transform player, float distance)
     {
         switch (personality)
