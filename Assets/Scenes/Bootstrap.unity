@@ -302,6 +302,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e1bcdcd270bfdce47b236ac006989a12, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SessionUI
+  relayRegion: europe-west4
 --- !u!114 &421671330
 MonoBehaviour:
   m_ObjectHideFlags: 0

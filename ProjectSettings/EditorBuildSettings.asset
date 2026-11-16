@@ -29,6 +29,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Level256_Axel.unity
     guid: f81515aae73228d458e4665734f889b3
+  - enabled: 1
+    path: Assets/Scenes/Level.unity
+    guid: a5e21af27d8976940bc16ba53de121ee
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0
