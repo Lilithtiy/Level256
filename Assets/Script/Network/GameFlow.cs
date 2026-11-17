@@ -38,7 +38,6 @@ public class GameFlow : MonoBehaviour
     }
 
     // Called by the host
-
     public void OpenLobby() => LoadScene(lobbySceneName);
     public void StartGame() => LoadScene(gameSceneName);
     public void ReturnToLobby() => LoadScene(lobbySceneName);
@@ -68,7 +67,6 @@ public class GameFlow : MonoBehaviour
     }
 
     // Spawning players when the game scene is ready
-
     private void OnLoadEventCompleted(string sceneName, LoadSceneMode mode,
         List<ulong> clientsCompleted, List<ulong> clientsTimedOut)
     {
