@@ -1,0 +1,14 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:Label name="role" class="panel-role" />
+    <ui:Label name="instruction" class="panel-instruction" />
+    <ui:VisualElement name="reader" class="section">
+        <ui:Label text="LEGEND" class="panel-note" />
+        <ui:VisualElement name="legend" class="row" />
+        <ui:Label text="SEQUENCE" class="panel-note" />
+        <ui:VisualElement name="sequence" class="row" />
+    </ui:VisualElement>
+    <ui:VisualElement name="operator" class="section">
+        <ui:VisualElement name="pads" class="row" />
+        <ui:Label name="entered" class="panel-note" />
+    </ui:VisualElement>
+</ui:UXML>

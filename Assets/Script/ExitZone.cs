@@ -56,13 +56,4 @@ public class ExitZone : NetworkBehaviour
             timer = 0f;
         }
     }
-
-    private void OnGUI()
-    {
-        if (!IsSpawned || !IsOpen) return;
-        if (GameManager.Instance == null || GameManager.Instance.State.Value != GameState.Playing) return;
-
-        var style = new GUIStyle(GUI.skin.label) { fontSize = 18, alignment = TextAnchor.UpperRight };
-        GUI.Label(new Rect(Screen.width - 300, 106, 290, 26), $"Exit: {PlayersInside.Value}/{PlayersTotal.Value} players", style);
-    }
 }

@@ -1,0 +1,8 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:Label text="Connect each wire to its matching colour" class="panel-instruction" />
+    <ui:VisualElement name="board" class="wire-board">
+        <ui:VisualElement name="left" class="wire-col" />
+        <ui:VisualElement name="right" class="wire-col" />
+    </ui:VisualElement>
+    <ui:Label name="round" class="panel-note" />
+</ui:UXML>
