@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class GeneratorTask : StationTask
 {
-    [SerializeField] private float repairSeconds = 10f;   // time for ONE player
+    [SerializeField] private float repairSeconds = 10f; // Time for 1 player
 
     public override TaskMode Mode => TaskMode.Hold;
     public override string Prompt => "Hold E to repair";

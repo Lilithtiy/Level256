@@ -1,0 +1,16 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <Style src="TaskPanel.uss" />
+    <ui:VisualElement name="hud" class="hud" picking-mode="Ignore">
+        <ui:Label text="OBJECTIVES" class="hud__title" />
+        <ui:VisualElement name="tasks" />
+        <ui:VisualElement name="power-row" class="hud__row">
+            <ui:Label text="Fill the power bar" class="hud__name" />
+            <ui:Label name="power-value" class="hud__value" />
+        </ui:VisualElement>
+        <ui:VisualElement name="exit-row" class="hud__row">
+            <ui:Label text="Escape" class="hud__name" />
+            <ui:Label name="exit-value" class="hud__value" />
+        </ui:VisualElement>
+        <ui:Label name="lives" class="hud__lives" />
+    </ui:VisualElement>
+</ui:UXML>

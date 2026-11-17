@@ -6,40 +6,46 @@ public class TaskManager : NetworkBehaviour
 {
     public static TaskManager Instance { get; private set; }
 
-    [SerializeField] private int tasksPerRound = 4;
+    [SerializeField] private int tasksPerRound = 5;
+    [SerializeField] private bool guaranteeTeamTask = true;
 
     public NetworkVariable<int> Completed = new(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     public NetworkVariable<int> Total = new(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
-    // SERVER ONLY. The exit (and the energy bar) can listen to this.
     public event System.Action OnAllTasksCompleted;
 
-    private void Awake()
-    {
-        Instance = this;
-    }
+    private void Awake() => Instance = this;
 
-    // SERVER ONLY. Called by GameManager.BeginRound.
     public void SetupRound()
     {
         if (!IsServer) return;
 
+        int players = NetworkManager.Singleton.ConnectedClientsList.Count;
         var all = new List<StationTask>(FindObjectsByType<StationTask>(FindObjectsSortMode.None));
 
-        // Shuffle
         for (int i = all.Count - 1; i > 0; i--)
         {
             int j = Random.Range(0, i + 1);
             (all[i], all[j]) = (all[j], all[i]);
         }
 
-        int count = Mathf.Min(tasksPerRound, all.Count);
-        for (int i = 0; i < all.Count; i++)
-            all[i].ServerSetup(i < count);   // the first few are active this round
+        if (guaranteeTeamTask && players >= 2)
+        {
+            int team = all.FindIndex(t => t.MinPlayers > 1 && t.MinPlayers <= players);
+            if (team > 0) (all[0], all[team]) = (all[team], all[0]);
+        }
+
+        int active = 0;
+        foreach (var t in all)
+        {
+            bool use = active < tasksPerRound && t.MinPlayers <= players;
+            t.ServerSetup(use);
+            if (use) active++;
+        }
 
         Completed.Value = 0;
-        Total.Value = count;
-        Debug.Log($"Round tasks: {count} active out of {all.Count}");
+        Total.Value = active;
+        Debug.Log($"Round tasks: {active} active out of {all.Count} ({players} players)");
     }
 
     public void TaskCompleted(StationTask task)
@@ -51,15 +57,5 @@ public class TaskManager : NetworkBehaviour
 
         if (Completed.Value >= Total.Value)
             OnAllTasksCompleted?.Invoke();
-    }
-
-    // Temporary UI
-    private void OnGUI()
-    {
-        if (!IsSpawned || Total.Value == 0) return;
-
-        var style = new GUIStyle(GUI.skin.label) { fontSize = 20, alignment = TextAnchor.UpperCenter };
-        GUI.Label(new Rect(Screen.width / 2f - 100, 10, 200, 30),
-            $"Tasks: {Completed.Value}/{Total.Value}", style);
     }
 }

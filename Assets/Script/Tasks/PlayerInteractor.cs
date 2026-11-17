@@ -7,12 +7,16 @@ public class PlayerInteractor : NetworkBehaviour
 {
     [SerializeField] private InputActionReference interactAction;
     [SerializeField] private float interactRange = 3f;
+    [Tooltip("How long a finished panel stays open so the success message can be read")]
+    [SerializeField] private float closeDelayAfterDone = 1.2f;
 
     private Camera cam;
     private PlayerController player;
-    private StationTask target;    // the task we're looking at
-    private StationTask working;   // the task we're working on (holding or in the panel)
+    private StationTask target;
+    private Vector3 targetPoint;
+    private StationTask working;
     private bool panelOpen;
+    private float doneAt = -1f;
 
     private void Awake()
     {
@@ -27,45 +31,92 @@ public class PlayerInteractor : NetworkBehaviour
 
     public override void OnNetworkDespawn()
     {
-        if (IsOwner) interactAction.action.Disable();
+        if (!IsOwner) return;
+
+        interactAction.action.Disable();
+
+        var host = TaskPanelHost.Instance;
+        if (host != null)
+        {
+            host.ClosePanel();
+            host.HidePrompt();
+            host.HideHold();
+        }
     }
 
     private void Update()
     {
         if (!IsOwner) return;
 
+        var host = TaskPanelHost.Instance;
+        if (host == null) return;
+
         bool canInteract = GameManager.Instance != null &&
                            GameManager.Instance.State.Value == GameState.Playing &&
                            !player.IsCaught;
 
-        // A panel is open: we only check whether it should close
+        // A panel is open, so we only need to check whether it should close
         if (panelOpen)
         {
             bool escape = Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame;
-            if (!canInteract || escape || working == null || working.IsDone.Value || !working.IsActive.Value)
+            bool toggle = interactAction.action.WasPressedThisFrame();
+
+            if (!canInteract || escape || toggle || working == null ||
+                !working.IsActive.Value || !working.InRange(transform.position))
+            {
                 ClosePanel();
+                return;
+            }
+
+            if (working.IsDone.Value)
+            {
+                if (doneAt < 0f) doneAt = Time.time;
+                if (Time.time - doneAt >= closeDelayAfterDone) ClosePanel();
+            }
             return;
         }
 
         target = canInteract ? FindTarget() : null;
 
-        // Holding a task: keep going while we look at it and hold the button
+        // Holding a task, keep going while we look at it and hold the button
         if (working != null)
         {
             if (target != working || !interactAction.action.IsPressed())
+            {
                 StopWorking();
+                host.HideHold();
+            }
+            else
+            {
+                host.HidePrompt();
+                host.ShowHold(working.HoldLabel, working.Progress.Value);
+                return;
+            }
+        }
+
+        if (target == null)
+        {
+            host.HidePrompt();
+            host.HideHold();
             return;
         }
 
-        if (target == null) return;
+        host.HideHold();
+        string prompt = target.Prompt;
+        if (target.Workers.Value > 0) prompt += $"   ({target.Workers.Value} working)";
+        host.ShowPrompt(prompt);
 
-        if (target.Mode == TaskMode.Hold)
+        switch (target.Mode)
         {
-            if (interactAction.action.IsPressed()) StartWorking(target);
-        }
-        else if (interactAction.action.WasPressedThisFrame())
-        {
-            OpenPanel(target);
+            case TaskMode.Hold:
+                if (interactAction.action.IsPressed()) StartWorking(target);
+                break;
+            case TaskMode.Panel:
+                if (interactAction.action.WasPressedThisFrame()) OpenPanel(target);
+                break;
+            case TaskMode.Press:
+                if (interactAction.action.WasPressedThisFrame()) target.InteractRpc();
+                break;
         }
     }
 
@@ -76,13 +127,16 @@ public class PlayerInteractor : NetworkBehaviour
         if (Physics.Raycast(ray, out RaycastHit hit, interactRange, ~0, QueryTriggerInteraction.Ignore))
         {
             var task = hit.collider.GetComponentInParent<StationTask>();
-            if (task != null && task.IsActive.Value && !task.IsDone.Value) return task;
+            if (task != null && task.IsSpawned && task.IsActive.Value && !task.IsDone.Value)
+            {
+                targetPoint = hit.point;
+                return task;
+            }
         }
         return null;
     }
 
-    // ---------- Starting and stopping ----------
-
+    // Starting and stopping
     private void StartWorking(StationTask task)
     {
         working = task;
@@ -91,76 +145,32 @@ public class PlayerInteractor : NetworkBehaviour
 
     private void StopWorking()
     {
-        if (working != null) working.SetWorkingRpc(false);
+        if (working != null && working.IsSpawned) working.SetWorkingRpc(false);
         working = null;
     }
 
     private void OpenPanel(StationTask task)
     {
+        var host = TaskPanelHost.Instance;
+
+        if (!host.OpenPanel(task)) return;
+
         working = task;
         panelOpen = true;
+        doneAt = -1f;
         task.SetWorkingRpc(true);
-        task.OnPanelOpened();
-        player.SetInputLocked(true);   // frozen, and the mouse is free
+
+        host.HidePrompt();
+        host.HideHold();
+        player.SetInputLocked(true);
     }
 
     private void ClosePanel()
     {
         panelOpen = false;
         StopWorking();
+
+        if (TaskPanelHost.Instance != null) TaskPanelHost.Instance.ClosePanel();
         player.SetInputLocked(false);
-    }
-
-    // ---------- UI ----------
-
-    private void OnGUI()
-    {
-        if (!IsOwner) return;
-
-        if (panelOpen && working != null)
-        {
-            DrawPanelWindow();
-            return;
-        }
-
-        if (target == null || Event.current.type != EventType.Repaint) return;
-
-        var style = new GUIStyle(GUI.skin.label) { fontSize = 22, alignment = TextAnchor.MiddleCenter };
-
-        string text = working != null
-            ? $"{target.TaskName}...  {target.Progress.Value * 100f:0}%"
-            : target.Prompt;
-
-        if (target.Workers.Value > 0)
-            text += $"   ({target.Workers.Value} working)";
-
-        GUI.Label(new Rect(0, Screen.height * 0.6f, Screen.width, 40), text, style);
-    }
-
-    private void DrawPanelWindow()
-    {
-        // Dim the world
-        Color old = GUI.color;
-        GUI.color = new Color(0f, 0f, 0f, 0.5f);
-        GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), Texture2D.whiteTexture);
-        GUI.color = old;
-
-        Rect window = new Rect(Screen.width / 2f - 340, Screen.height / 2f - 230, 680, 460);
-        GUI.Box(window, working.TaskName);
-
-        working.DrawPanel(new Rect(window.x + 20, window.y + 50, window.width - 40, window.height - 140));
-
-        // Progress shared by everyone working on this task
-        Rect bar = new Rect(window.x + 20, window.yMax - 70, window.width - 40, 20);
-        GUI.color = Color.gray;
-        GUI.DrawTexture(bar, Texture2D.whiteTexture);
-        GUI.color = Color.green;
-        GUI.DrawTexture(new Rect(bar.x, bar.y, bar.width * working.Progress.Value, bar.height), Texture2D.whiteTexture);
-        GUI.color = old;
-
-        GUI.Label(new Rect(window.x + 20, window.yMax - 40, 300, 30), $"Working here: {working.Workers.Value}");
-
-        if (GUI.Button(new Rect(window.xMax - 160, window.yMax - 45, 140, 32), "Close (Esc)"))
-            ClosePanel();
     }
 }

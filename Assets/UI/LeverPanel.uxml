@@ -1,0 +1,4 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:Label text="Pull the levers in the order shown on the signal board" class="panel-instruction" />
+    <ui:VisualElement name="levers" class="row" />
+</ui:UXML>

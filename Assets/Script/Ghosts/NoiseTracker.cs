@@ -79,24 +79,42 @@ public class NoiseTracker : MonoBehaviour
             if (radius > 0f)
                 Noises.Add(new Noise { position = pos, radius = radius });
         }
+        for (int i = external.Count - 1; i >= 0; i--)
+        {
+            if (Time.time >= external[i].expiresAt)
+            {
+                external.RemoveAt(i);
+                continue;
+            }
+            Noises.Add(new Noise { position = external[i].position, radius = external[i].radius });
+        }
     }
 
     // For noise that isn't footsteps, like repairing something.
     public void EmitNoise(Vector3 position, float radius, float seconds)
     {
+        float expires = Time.time + seconds;
+
         for (int i = 0; i < external.Count; i++)
         {
-            if ((external[i].position - position).sqrMagnitude < 0.01f)
+            if ((external[i].position - position).sqrMagnitude >= 0.01f) continue;
+
+            var t = external[i];
+            if (Time.time >= t.expiresAt)
             {
-                var t = external[i];
                 t.radius = radius;
-                t.expiresAt = Time.time + seconds;
-                external[i] = t;
-                return;
+                t.expiresAt = expires;
             }
+            else
+            {
+                t.radius = Mathf.Max(t.radius, radius);
+                t.expiresAt = Mathf.Max(t.expiresAt, expires);
+            }
+            external[i] = t;
+            return;
         }
 
-        external.Add(new TimedNoise { position = position, radius = radius, expiresAt = Time.time + seconds });
+        external.Add(new TimedNoise { position = position, radius = radius, expiresAt = expires });
     }
 
     // Look in the scene window, a yellow spheres shows the noise
