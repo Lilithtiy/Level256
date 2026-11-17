@@ -1,6 +1,6 @@
+using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
-using System.Collections;
 using UnityEngine.AI;
 
 public class GhostSpawner : MonoBehaviour
@@ -12,37 +12,92 @@ public class GhostSpawner : MonoBehaviour
     {
         public GameObject prefab;
         public Transform point;
+        [Range(0f, 1f)] public float spawnAtProgress = 0f;   // 0.10 = spawns at 10% progress
     }
 
     [SerializeField] private GhostSpawn[] ghosts;
 
+    [Tooltip("If a player is closer than this to a spawn point, the ghost spawns at the point furthest from the players instead")]
+    [SerializeField] private float minSpawnDistance = 15f;
+
+    private bool[] spawned;
+    private bool roundActive;
+
     private void Awake()
     {
         Instance = this;
+        spawned = new bool[ghosts.Length];
     }
 
-    // SERVER ONLY
-    public void SpawnGhosts()
+    public void StartRound()
     {
-        int count = 0;
+        spawned = new bool[ghosts.Length];
+        roundActive = true;
+        SpawnDue(0f);
+    }
 
-        foreach (var g in ghosts)
+    private void Update()
+    {
+        if (!roundActive) return;
+
+        var nm = NetworkManager.Singleton;
+        if (nm == null || !nm.IsServer) return;
+
+        var gm = GameManager.Instance;
+        var objectives = ObjectiveManager.Instance;
+        if (gm == null || gm.State.Value != GameState.Playing) return;
+        if (objectives == null || !objectives.IsSpawned) return;
+
+        SpawnDue(objectives.Progress.Value);
+    }
+
+    private void SpawnDue(float progress)
+    {
+        for (int i = 0; i < ghosts.Length; i++)
         {
-            if (g.prefab == null || g.point == null)
-            {
-                Debug.LogError("GhostSpawner: a Ghosts entry is missing its Prefab or Point.");
-                continue;
-            }
+            if (spawned[i] || progress < ghosts[i].spawnAtProgress) continue;
 
-            var ghost = Instantiate(g.prefab, g.point.position, g.point.rotation);
-            ghost.GetComponent<GhostAI>().SetRespawnPrefab(g.prefab);
-            ghost.GetComponent<NetworkObject>().Spawn();
-            count++;
+            spawned[i] = true;
+            SpawnOne(ghosts[i]);
+        }
+    }
+
+    private void SpawnOne(GhostSpawn g)
+    {
+        if (g.prefab == null || g.point == null)
+        {
+            Debug.LogError("GhostSpawner: a Ghosts entry is missing its Prefab or Point.");
+            return;
         }
 
-        Debug.Log($"GhostSpawner: spawned {count} ghosts");
+        Transform point = g.point;
+        if (PlayerWithin(point.position, minSpawnDistance))
+        {
+            Transform far = FindFurthestSpawnPoint();
+            if (far != null) point = far;
+        }
+
+        var ghost = Instantiate(g.prefab, point.position, point.rotation);
+        ghost.GetComponent<GhostAI>().SetRespawnPrefab(g.prefab);
+        ghost.GetComponent<NetworkObject>().Spawn();
+
+        Debug.Log($"GhostSpawner: spawned {g.prefab.name} (threshold {g.spawnAtProgress:P0})");
     }
 
+    private bool PlayerWithin(Vector3 position, float distance)
+    {
+        foreach (var client in NetworkManager.Singleton.ConnectedClientsList)
+        {
+            if (client.PlayerObject == null) continue;
+
+            Vector3 offset = client.PlayerObject.transform.position - position;
+            offset.y = 0f;
+            if (offset.magnitude < distance) return true;
+        }
+        return false;
+    }
+
+    // Respawning eaten ghosts
     public void RespawnGhost(GameObject ghost, float delay)
     {
         if (!NetworkManager.Singleton.IsServer) return;
@@ -103,8 +158,6 @@ public class GhostSpawner : MonoBehaviour
                     closestPlayerDistance = distance;
             }
 
-            // Select the spawn point with the greatest distance
-            // from its nearest player.
             if (closestPlayerDistance > bestDistance)
             {
                 bestDistance = closestPlayerDistance;

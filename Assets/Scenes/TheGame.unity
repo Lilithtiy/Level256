@@ -4987,6 +4987,11 @@ MonoBehaviour:
       MinSecondsBetweenUpdates: 0
       MaxSecondsBetweenUpdates: 0
     m_InternalValue: 0
+  Progress:
+    UpdateTraits:
+      MinSecondsBetweenUpdates: 0
+      MaxSecondsBetweenUpdates: 0
+    m_InternalValue: 0
 --- !u!114 &1736214172
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5544,12 +5549,17 @@ MonoBehaviour:
   ghosts:
   - prefab: {fileID: 7189741262078000257, guid: dd30e77b595560448af30536a7c33844, type: 3}
     point: {fileID: 679861820}
+    spawnAtProgress: 0.1
   - prefab: {fileID: 6220606879624569045, guid: 898d63781942a18409a5c01130df1fc7, type: 3}
     point: {fileID: 1952826243}
+    spawnAtProgress: 0.25
   - prefab: {fileID: 1321748938121803099, guid: abff163156cf98b48b295bf0a511aa83, type: 3}
     point: {fileID: 44516316}
+    spawnAtProgress: 0.4
   - prefab: {fileID: 4779735224527796444, guid: 1dd10920885d930448de9f5715b9f415, type: 3}
     point: {fileID: 1887607397}
+    spawnAtProgress: 0.6
+  minSpawnDistance: 15
 --- !u!1 &1952826242
 GameObject:
   m_ObjectHideFlags: 0
