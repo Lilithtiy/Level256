@@ -5,6 +5,7 @@ using UnityEngine.InputSystem;
 public class ObjectiveManager : NetworkBehaviour
 {
     public static ObjectiveManager Instance { get; private set; }
+    
 
     [Tooltip("Untick to test")]
     [SerializeField] private bool requireEnergy = true;
@@ -13,6 +14,8 @@ public class ObjectiveManager : NetworkBehaviour
     public NetworkVariable<bool> TasksDone = new(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     public NetworkVariable<bool> EnergyFull = new(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     public NetworkVariable<bool> ExitOpen = new(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+
+    public NetworkVariable<float> Progress = new(0f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
     private void Awake()
     {
@@ -66,6 +69,9 @@ public class ObjectiveManager : NetworkBehaviour
             SetEnergyFull(true);
         }
 
+        float p = ComputeProgress();
+        if (Mathf.Abs(p - Progress.Value) > 0.001f) Progress.Value = p;
+
         // just temporaty test keys so F6 fills the power bar, F7 finishes all tasks
         if (Keyboard.current == null) return;
         if (Keyboard.current.f6Key.wasPressedThisFrame) SetEnergyFull(true);
@@ -93,7 +99,29 @@ public class ObjectiveManager : NetworkBehaviour
 
         GUI.Label(new Rect(x, 84, 290, 24),
             ExitOpen.Value ? "EXIT OPEN, get everyone out!" : "[ ] Escape", style);
+
+        GUI.Label(new Rect(x, 128, 290, 24), $"Progress: {Mathf.RoundToInt(Progress.Value * 100f)}%", style);
     }
 
     private static string Mark(bool done) => done ? "[x]" : "[ ]";
+
+    // Overall progress from 0 to 1
+    private float ComputeProgress()
+    {
+        float tasks = 0f;
+        var tm = TaskManager.Instance;
+        if (TasksDone.Value) tasks = 1f;
+        else if (tm != null && tm.IsSpawned && tm.Total.Value > 0)
+            tasks = (float)tm.Completed.Value / tm.Total.Value;
+
+        if (!requireEnergy) return tasks;
+
+        float energy = 0f;
+        var score = ScoreManager.scoreManager;
+        if (EnergyFull.Value) energy = 1f;
+        else if (score != null && score.IsSpawned)
+            energy = Mathf.Clamp01((float)score.electricityScore.Value / energyNeeded);
+
+        return (tasks + energy) * 0.5f;
+    }
 }

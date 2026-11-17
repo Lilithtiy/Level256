@@ -53,7 +53,7 @@ public class GameManager : NetworkBehaviour
         ghostState.Value = GhostState.Normal;
 
         if (GhostSpawner.Instance != null)
-            GhostSpawner.Instance.SpawnGhosts();
+            GhostSpawner.Instance.StartRound();
         else
             Debug.LogWarning("GameManager: there is no GhostSpawner in the scene, so NO ghosts will spawn.");
 
