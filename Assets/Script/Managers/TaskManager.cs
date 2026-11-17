@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Unity.Netcode;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class TaskManager : NetworkBehaviour
@@ -10,6 +11,8 @@ public class TaskManager : NetworkBehaviour
 
     public NetworkVariable<int> Completed = new(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     public NetworkVariable<int> Total = new(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+
+    [SerializeField] private ScriptableAudio taskCompletedAudio;
 
     // SERVER ONLY. The exit (and the energy bar) can listen to this.
     public event System.Action OnAllTasksCompleted;
@@ -47,6 +50,7 @@ public class TaskManager : NetworkBehaviour
         if (!IsServer) return;
 
         Completed.Value++;
+        AudioManager.audioManagerInstance.PlayLocal(taskCompletedAudio);
         Debug.Log($"Task done: {task.TaskName} ({Completed.Value}/{Total.Value})");
 
         if (Completed.Value >= Total.Value)
