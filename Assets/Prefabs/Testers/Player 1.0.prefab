@@ -422,7 +422,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0f472245193f44b43bebb10cb3f52ebc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerAnimator
+  ShowTopMostFoldoutHeaderGroup: 1
   smoothing: 12
+  minBlinkGap: 2
+  maxBlinkGap: 6
+  surprisedSeconds: 1.5
 --- !u!1 &6997019822837675872
 GameObject:
   m_ObjectHideFlags: 0
@@ -568,6 +572,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1605805642952814212}
     m_Modifications:
+    - target: {fileID: 1875088943271115394, guid: 234abf5dfdedd4941b5c7b57baf59fac, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4743722307774280114, guid: 234abf5dfdedd4941b5c7b57baf59fac, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -606,6 +614,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4743722307774280114, guid: 234abf5dfdedd4941b5c7b57baf59fac, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4965071223453690715, guid: 234abf5dfdedd4941b5c7b57baf59fac, type: 3}
+      propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5376953681797917448, guid: 234abf5dfdedd4941b5c7b57baf59fac, type: 3}
