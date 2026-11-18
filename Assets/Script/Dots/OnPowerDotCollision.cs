@@ -5,6 +5,8 @@ public class OnPowerDotCollision : NetworkBehaviour
 {
     [SerializeField] int scoreValue = 50;
 
+    [SerializeField] private ScriptableAudio powerDotCollisionAudio;
+
     private void OnTriggerEnter(Collider other)
     {
         if (other.gameObject.CompareTag("Player"))
@@ -15,6 +17,9 @@ public class OnPowerDotCollision : NetworkBehaviour
             {
                 // Call the method to handle the dot collision
                 collisionHandler.HandlePowerDotCollision(scoreValue, NetworkObject);
+
+                // Play the power dot collision audio
+                AudioManager.audioManagerInstance.PlayLocal(powerDotCollisionAudio);
             }
         }
     }

@@ -28,6 +28,8 @@ public class GhostAI : NetworkBehaviour
     [SerializeField] private float speed = 3.5f;
     [SerializeField] private float wanderRadius = 12f;
     [SerializeField] private float repathInterval = 0.25f;
+    [SerializeField] private ScriptableAudio ghostProximityAudio;
+    private AudioSource ghostProximityAudioSource;
 
     [Header("Catching")]
     [SerializeField] private float catchDistance = 1.8f;
@@ -37,6 +39,7 @@ public class GhostAI : NetworkBehaviour
     [SerializeField] private float fleeDistance = 10f;
     [SerializeField] private float fleeRepathInterval = 0.5f;
     private float nextFleeRepath;
+    [SerializeField] private ScriptableAudio ghostDeathAudio;
 
     [Header("Respawning")]
     [SerializeField] private float ghostRespawnDelay = 5f;
@@ -56,6 +59,8 @@ public class GhostAI : NetworkBehaviour
 
     public override void OnNetworkSpawn()
     {
+        ghostProximityAudioSource = AudioManager.audioManagerInstance.PlayAttached(ghostProximityAudio, gameObject.transform);
+
         if (!IsServer)
         {
             agent.enabled = false;
@@ -70,7 +75,13 @@ public class GhostAI : NetworkBehaviour
 
     public override void OnNetworkDespawn()
     {
-        if (IsServer) allGhosts.Remove(this);
+        if (IsServer)
+        {
+            allGhosts.Remove(this);
+
+            AudioManager.audioManagerInstance.StopAttached(ghostProximityAudioSource);
+            ghostProximityAudioSource = null;
+        }
     }
 
     public void SetRespawnPrefab(GameObject prefab)
@@ -162,6 +173,7 @@ public class GhostAI : NetworkBehaviour
     {
         if (!NetworkObject.IsSpawned) return;
 
+        AudioManager.audioManagerInstance.PlayAt(ghostDeathAudio, transform.position);
         GhostSpawner.Instance.RespawnGhost(ghostPrefab, ghostRespawnDelay);
         NetworkObject.Despawn(true);
     }
