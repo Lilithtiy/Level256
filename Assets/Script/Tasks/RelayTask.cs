@@ -34,6 +34,8 @@ public class RelayTask : StationTask
     public override int MinPlayers => 2;
     public override string HudDetail => $"{PresentCount()}/2 AT CONSOLES";
 
+    private IVisualElementScheduledItem waitTimeout;
+
     // helpers
     private static float Flat(Vector3 position, Transform t)
     {
@@ -243,6 +245,8 @@ public class RelayTask : StationTask
             }
             waiting = true;
             SubmitRelayRpc(int.Parse(entry));
+            waitTimeout?.Pause();
+            waitTimeout = entryLabel.schedule.Execute(() => waiting = false).StartingIn(2500);
             return;
         }
         else if (entry.Length < Digits)
@@ -255,6 +259,7 @@ public class RelayTask : StationTask
 
     private void OnResult(bool ok, bool finished)
     {
+        waitTimeout?.Pause();
         waiting = false;
         entry = "";
         if (entryLabel != null) UpdateEntry();

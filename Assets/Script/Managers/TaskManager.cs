@@ -20,6 +20,32 @@ public class TaskManager : NetworkBehaviour
 
     private void Awake() => Instance = this;
 
+     private float nextCheck;
+
+    private void Update()
+    {
+        if (!IsServer || !IsSpawned || Time.time < nextCheck) return;
+        nextCheck = Time.time + 1f;
+
+        int players = NetworkManager.Singleton.ConnectedClientsList.Count;
+        bool dropped = false;
+
+        foreach (var t in StationTask.All)
+        {
+            if (!t.IsSpawned || !t.IsActive.Value || t.IsDone.Value || t.MinPlayers <= players) continue;
+
+            t.ServerDeactivate();
+            Total.Value = Mathf.Max(0, Total.Value - 1);
+            dropped = true;
+            Debug.Log($"{t.TaskName} dropped: needs {t.MinPlayers} players, {players} left");
+        }
+
+        // If that was the last unfinished task, the exit logic must hear about it
+        if (dropped && Total.Value > 0 && Completed.Value >= Total.Value)
+            OnAllTasksCompleted?.Invoke();
+    }
+
+
     public void SetupRound()
     {
         if (!IsServer) return;
