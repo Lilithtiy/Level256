@@ -60,12 +60,14 @@ public class PlayerController : NetworkBehaviour
 
     private CharacterController controller;
     private float verticalVelocity;
+    private float feetY;
 
     public bool IsCrouching => isCrouching.Value;
 
     private void Awake()
     {
         controller = GetComponent<CharacterController>();
+        feetY = controller.center.y - controller.height / 1.8f;
         camera = GetComponentInChildren<Camera>();
         cameraTransform = camera.transform;
         audioListener = camera.GetComponent<AudioListener>();
@@ -169,13 +171,14 @@ public class PlayerController : NetworkBehaviour
     {
         float h = crouching ? crouchHeight : standHeight;
 
+        // Its shrinks from the top, so the feet stay where they are
         controller.height = h;
-        //controller.center = new Vector3(0f, h * 0.5f, 0f);
+        controller.center = new Vector3(controller.center.x, feetY + h * 0.5f, controller.center.z);
 
         if (visual != null)
         {
             visual.localScale = new Vector3(1f, h / standHeight, 1f);
-            visual.localPosition = new Vector3(0f, h * 0.5f, 0f);
+            visual.localPosition = new Vector3(0f, feetY, 0f);
         }
 
         if (cameraTransform != null)
