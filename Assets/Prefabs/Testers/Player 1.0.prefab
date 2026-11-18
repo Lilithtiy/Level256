@@ -215,7 +215,7 @@ CharacterController:
   m_Radius: 0.5
   m_SlopeLimit: 45
   m_StepOffset: 0.6
-  m_SkinWidth: 0.08
+  m_SkinWidth: 0.1
   m_MinMoveDistance: 0.001
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &6346207085508567150
@@ -372,6 +372,7 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   interactAction: {fileID: 1781555164194001046, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   interactRange: 4
+  closeDelayAfterDone: 1.2
 --- !u!108 &2112864398096366050
 Light:
   m_ObjectHideFlags: 0

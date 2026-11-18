@@ -35,9 +35,12 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Scenes/TheGame.unity
     guid: 35465fc0e53a3c745a58e5084468e426
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/TheGame_Axel.unity
     guid: 5645a8fb5f5ec69478c3ba6565ff41ee
+  - enabled: 1
+    path: Assets/Scenes/TheGameGame.unity
+    guid: c4c1119b2f3df604783bb41c61186b2e
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0
