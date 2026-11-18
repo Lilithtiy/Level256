@@ -8,6 +8,8 @@ public class OnDotCollision : NetworkBehaviour
     [SerializeField] int dotValue = 5;
     [SerializeField] int scoreValue = 10;
 
+    [SerializeField] private ScriptableAudio dotCollisionAudio;
+
     private void OnTriggerEnter(Collider other)
     {   
         if (other.gameObject.CompareTag("Player"))
@@ -18,6 +20,9 @@ public class OnDotCollision : NetworkBehaviour
             {
                 // Call the method to handle the dot collision
                 collisionHandler.HandleDotCollision(dotValue, scoreValue, NetworkObject);
+
+                // Play the dot collision audio
+                AudioManager.audioManagerInstance.PlayLocal(dotCollisionAudio);
             }
         }
     }

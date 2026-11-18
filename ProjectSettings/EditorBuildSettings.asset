@@ -26,12 +26,18 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Lobby.unity
     guid: 9763c7a0cae53c645bfeb40bb73a693d
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/Level256_Axel.unity
     guid: f81515aae73228d458e4665734f889b3
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/Level.unity
     guid: a5e21af27d8976940bc16ba53de121ee
+  - enabled: 0
+    path: Assets/Scenes/TheGame.unity
+    guid: 35465fc0e53a3c745a58e5084468e426
+  - enabled: 1
+    path: Assets/Scenes/TheGame_Axel.unity
+    guid: 5645a8fb5f5ec69478c3ba6565ff41ee
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0

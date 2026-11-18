@@ -132,7 +132,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
   GlobalObjectIdHash: 1642775469
-  InScenePlacedSourceGlobalObjectIdHash: 0
+  InScenePlacedSourceGlobalObjectIdHash: 1642775469
   m_InScenePlacedDisabledByDefault: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -140,7 +140,7 @@ MonoBehaviour:
   SynchronizeTransform: 1
   m_InScenePlaced: 0
   ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
+  SceneMigrationSynchronization: 0
   SpawnWithObservers: 1
   DontDestroyWithOwner: 0
   AutoObjectParentSync: 1
@@ -210,7 +210,7 @@ NavMeshAgent:
   m_AutoTraverseOffMeshLink: 1
   m_AutoBraking: 1
   m_AutoRepath: 1
-  m_Height: 2
+  m_Height: 0.41
   m_BaseOffset: 1
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
@@ -239,8 +239,14 @@ MonoBehaviour:
   speed: 3.5
   wanderRadius: 12
   repathInterval: 0.25
+  ghostProximityAudio: {fileID: 11400000, guid: 24cde41c3306f884286fe5ca64697a0e, type: 2}
   catchDistance: 1.8
   stunSeconds: 3
+  fleeDistance: 10
+  fleeRepathInterval: 0.5
+  ghostDeathAudio: {fileID: 11400000, guid: 5532870719781fb4f927f997023a97a8, type: 2}
+  ghostRespawnDelay: 5
+  ghostPrefab: {fileID: 0}
 --- !u!114 &5764462272341419548
 MonoBehaviour:
   m_ObjectHideFlags: 0

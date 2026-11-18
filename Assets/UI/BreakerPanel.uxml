@@ -1,0 +1,6 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:Label text="Match the pattern" class="panel-instruction" />
+    <ui:VisualElement name="pattern" class="row" />
+    <ui:VisualElement name="switches" class="row" />
+    <ui:Label name="round" class="panel-note" />
+</ui:UXML>

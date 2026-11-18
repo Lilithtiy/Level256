@@ -1,0 +1,14 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:Label name="role" class="panel-role" />
+    <ui:Label name="instruction" class="panel-instruction" />
+    <ui:VisualElement name="transmitter" class="section">
+        <ui:Label text="NUMBER TO TRANSMIT" class="panel-note" />
+        <ui:Label name="number" class="relay-number" />
+    </ui:VisualElement>
+    <ui:VisualElement name="receiver" class="section">
+        <ui:Label name="entry" class="display" />
+        <ui:VisualElement name="keys" class="keypad" />
+    </ui:VisualElement>
+    <ui:Label name="link" class="panel-status" />
+    <ui:Label name="round" class="panel-note" />
+</ui:UXML>

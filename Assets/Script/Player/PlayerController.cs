@@ -40,7 +40,7 @@ public class PlayerController : NetworkBehaviour
     [SerializeField] private float holdSeconds = 1.0f;
     [SerializeField] private float fadeSeconds = 0.6f;
     [SerializeField] private float maxFlash = 0.7f;
-    [SerializeField] private AudioClip catchClip;
+    [SerializeField] private ScriptableAudio catchClip;
     private bool isCaught;
     private float flashAlpha;
     private Coroutine catchRoutine;
@@ -60,12 +60,14 @@ public class PlayerController : NetworkBehaviour
 
     private CharacterController controller;
     private float verticalVelocity;
+    private float feetY;
 
     public bool IsCrouching => isCrouching.Value;
 
     private void Awake()
     {
         controller = GetComponent<CharacterController>();
+        feetY = controller.center.y - controller.height / 1.8f;
         camera = GetComponentInChildren<Camera>();
         cameraTransform = camera.transform;
         audioListener = camera.GetComponent<AudioListener>();
@@ -169,13 +171,14 @@ public class PlayerController : NetworkBehaviour
     {
         float h = crouching ? crouchHeight : standHeight;
 
+        // Its shrinks from the top, so the feet stay where they are
         controller.height = h;
-        //controller.center = new Vector3(0f, h * 0.5f, 0f);
+        controller.center = new Vector3(controller.center.x, feetY + h * 0.5f, controller.center.z);
 
         if (visual != null)
         {
             visual.localScale = new Vector3(1f, h / standHeight, 1f);
-            visual.localPosition = new Vector3(0f, h * 0.5f, 0f);
+            visual.localPosition = new Vector3(0f, feetY, 0f);
         }
 
         if (cameraTransform != null)
@@ -234,7 +237,7 @@ public class PlayerController : NetworkBehaviour
         isCaught = true;
 
         if (catchClip != null)
-            AudioSource.PlayClipAtPoint(catchClip, cameraTransform.position);
+            AudioManager.audioManagerInstance.PlayAt(catchClip, cameraTransform.position);
 
         // Work out where to look, so the body yaw and camera pitch
         Vector3 flat = ghostPos - transform.position;
