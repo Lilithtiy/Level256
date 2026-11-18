@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class BreakerTask : StationTask
 {
@@ -8,11 +9,17 @@ public class BreakerTask : StationTask
     public override TaskMode Mode => TaskMode.Panel;
     public override string Prompt => "Press E to use the breaker panel";
 
-    private bool[] switches;
-    private bool[] pattern;
-    private float solvedFlashUntil;
+    private bool[] switches, pattern;
+    private VisualElement patternRow, switchRow;
+    private Label roundLabel;
 
-    public override void OnPanelOpened() => NewPuzzle();
+    public override void BindPanel(VisualElement root)
+    {
+        patternRow = root.Q("pattern");
+        switchRow = root.Q("switches");
+        roundLabel = root.Q<Label>("round");
+        NewPuzzle();
+    }
 
     private void NewPuzzle()
     {
@@ -26,61 +33,39 @@ public class BreakerTask : StationTask
             anyOn |= pattern[i];
         }
         if (!anyOn) pattern[Random.Range(0, switchCount)] = true;
-    }
 
-    public override void DrawPanel(Rect area)
-    {
-        if (switches == null) NewPuzzle();
+        patternRow.Clear();
+        switchRow.Clear();
 
-        var label = new GUIStyle(GUI.skin.label) { fontSize = 22, alignment = TextAnchor.MiddleCenter };
-        var small = new GUIStyle(GUI.skin.label) { fontSize = 20, alignment = TextAnchor.MiddleCenter };
-        var button = new GUIStyle(GUI.skin.button) { fontSize = 22 };
-
-        GUILayout.BeginArea(area);
-
-        GUILayout.Label("Match the pattern", label);
-        GUILayout.Space(10);
-
-        GUILayout.BeginHorizontal();
-        GUILayout.FlexibleSpace();
         for (int i = 0; i < switchCount; i++)
         {
-            small.normal.textColor = pattern[i] ? Color.green : Color.red;
-            GUILayout.Label(pattern[i] ? "ON" : "OFF", small, GUILayout.Width(80));
+            var lamp = new Label(pattern[i] ? "ON" : "OFF");
+            lamp.AddToClassList("lamp");
+            lamp.EnableInClassList("lamp--on", pattern[i]);
+            patternRow.Add(lamp);
+
+            int index = i;
+            var sw = new Button { text = "OFF" };
+            sw.AddToClassList("switch");
+            sw.clicked += () => Toggle(index, sw);
+            switchRow.Add(sw);
         }
-        GUILayout.FlexibleSpace();
-        GUILayout.EndHorizontal();
 
-        GUILayout.Space(20);
-
-        GUILayout.BeginHorizontal();
-        GUILayout.FlexibleSpace();
-        for (int i = 0; i < switchCount; i++)
-        {
-            GUI.backgroundColor = switches[i] ? Color.green : Color.red;
-            if (GUILayout.Button(switches[i] ? "ON" : "OFF", button, GUILayout.Width(80), GUILayout.Height(70)))
-            {
-                switches[i] = !switches[i];
-                CheckSolved();
-            }
-        }
-        GUI.backgroundColor = Color.white;
-        GUILayout.FlexibleSpace();
-        GUILayout.EndHorizontal();
-
-        GUILayout.Space(10);
-        GUILayout.Label(Time.time < solvedFlashUntil ? "Solved!" : " ", label);
-
-        GUILayout.EndArea();
+        int round = Mathf.Min(rounds, Mathf.RoundToInt(Progress.Value * rounds) + 1);
+        roundLabel.text = $"Round {round}/{rounds}";
     }
 
-    private void CheckSolved()
+    private void Toggle(int index, Button sw)
     {
+        switches[index] = !switches[index];
+        sw.text = switches[index] ? "ON" : "OFF";
+        sw.EnableInClassList("switch--on", switches[index]);
+
         for (int i = 0; i < switchCount; i++)
             if (switches[i] != pattern[i]) return;
 
         AddProgressRpc(1f / rounds);
-        solvedFlashUntil = Time.time + 1f;
+        Say("Solved!", true, 1f);
         NewPuzzle();
     }
 }

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class LeverTask : CodeTask
 {
@@ -15,6 +16,8 @@ public class LeverTask : CodeTask
     }
 
     private readonly List<int> pulled = new();
+    private readonly Button[] buttons = new Button[4];
+    private bool waiting;
 
     private static char Letter(int index) => (char)('A' + index);
 
@@ -29,52 +32,49 @@ public class LeverTask : CodeTask
         Code.Value = order[0] * 1000 + order[1] * 100 + order[2] * 10 + order[3];
     }
 
-    public override void OnPanelOpened()
+    public override void BindPanel(VisualElement root)
     {
+        var row = root.Q("levers");
+        row.Clear();
         pulled.Clear();
-        ShowMessage("");
-    }
+        waiting = false;
 
-    public override void DrawPanel(Rect area)
-    {
-        var label = new GUIStyle(GUI.skin.label) { fontSize = 22, alignment = TextAnchor.MiddleCenter };
-        var button = new GUIStyle(GUI.skin.button) { fontSize = 26 };
-
-        GUILayout.BeginArea(area);
-
-        GUILayout.Label("Pull the levers in the order shown on the signal board", label);
-        GUILayout.Space(30);
-
-        GUILayout.BeginHorizontal();
-        GUILayout.FlexibleSpace();
         for (int i = 0; i < 4; i++)
         {
-            bool isPulled = pulled.Contains(i);
-            GUI.backgroundColor = isPulled ? Color.green : Color.white;
-
-            string text = isPulled ? $"{Letter(i)}\n({pulled.IndexOf(i) + 1})" : Letter(i).ToString();
-            if (GUILayout.Button(text, button, GUILayout.Width(90), GUILayout.Height(110)) && !isPulled)
-            {
-                pulled.Add(i);
-                if (pulled.Count == 4) Submit();
-            }
+            int index = i;
+            var b = new Button { text = Letter(i).ToString() };
+            b.AddToClassList("lever");
+            b.clicked += () => Pull(index);
+            buttons[i] = b;
+            row.Add(b);
         }
-        GUI.backgroundColor = Color.white;
-        GUILayout.FlexibleSpace();
-        GUILayout.EndHorizontal();
-
-        GUILayout.Space(20);
-        GUILayout.Label(CurrentMessage, label);
-
-        GUILayout.EndArea();
     }
 
-    private void Submit()
+    private void Pull(int index)
     {
-        int code = pulled[0] * 1000 + pulled[1] * 100 + pulled[2] * 10 + pulled[3];
+        if (waiting || pulled.Contains(index)) return;
 
-        SubmitCodeRpc(code);
-        ShowMessage(code == Code.Value ? "Signals aligned!" : "Wrong order! The alarm is loud!");
+        pulled.Add(index);
+        buttons[index].AddToClassList("lever--pulled");
+        buttons[index].text = $"{Letter(index)}\n({pulled.Count})";
+
+        if (pulled.Count < 4) return;
+
+        waiting = true;
+        SubmitCodeRpc(pulled[0] * 1000 + pulled[1] * 100 + pulled[2] * 10 + pulled[3]);
+    }
+
+    protected override void OnCodeResult(bool ok)
+    {
+        waiting = false;
+        Say(ok ? "Signals aligned!" : "Wrong order! The alarm is loud!", ok, 2f);
+        if (ok) return;
+
         pulled.Clear();
+        for (int i = 0; i < 4; i++)
+        {
+            buttons[i].RemoveFromClassList("lever--pulled");
+            buttons[i].text = Letter(i).ToString();
+        }
     }
 }

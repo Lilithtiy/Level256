@@ -5,6 +5,9 @@ using UnityEngine.InputSystem;
 public class ObjectiveManager : NetworkBehaviour
 {
     public static ObjectiveManager Instance { get; private set; }
+
+    public bool RequireEnergy => requireEnergy;
+    public int EnergyNeeded => energyNeeded;
     
 
     [Tooltip("Untick to test")]
@@ -77,33 +80,6 @@ public class ObjectiveManager : NetworkBehaviour
         if (Keyboard.current.f6Key.wasPressedThisFrame) SetEnergyFull(true);
         if (Keyboard.current.f7Key.wasPressedThisFrame) OnTasksDone();
     }
-
-    // UI (Placeholder)
-    private void OnGUI()
-    {
-        if (!IsSpawned || GameManager.Instance == null ||
-            GameManager.Instance.State.Value != GameState.Playing) return;
-
-        var style = new GUIStyle(GUI.skin.label) { fontSize = 16, alignment = TextAnchor.UpperRight };
-        float x = Screen.width - 300f;
-
-        string tasks = TaskManager.Instance != null ? $"{TaskManager.Instance.Completed.Value}/{TaskManager.Instance.Total.Value}" : "-";
-
-        var score = ScoreManager.scoreManager;
-        string energy = (score != null && score.IsSpawned) ? $"{score.electricityScore.Value}/{energyNeeded}" : "-";
-
-        GUI.Label(new Rect(x, 40, 290, 24), $"{Mark(TasksDone.Value)} Repair the systems ({tasks})", style);
-
-        if (requireEnergy)
-            GUI.Label(new Rect(x, 62, 290, 24), $"{Mark(EnergyFull.Value)} Fill the power bar ({energy})", style);
-
-        GUI.Label(new Rect(x, 84, 290, 24),
-            ExitOpen.Value ? "EXIT OPEN, get everyone out!" : "[ ] Escape", style);
-
-        GUI.Label(new Rect(x, 128, 290, 24), $"Progress: {Mathf.RoundToInt(Progress.Value * 100f)}%", style);
-    }
-
-    private static string Mark(bool done) => done ? "[x]" : "[ ]";
 
     // Overall progress from 0 to 1
     private float ComputeProgress()

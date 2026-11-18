@@ -3,6 +3,8 @@ using Unity.Collections;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.UIElements;
 
 public struct LobbyPlayer : INetworkSerializable, System.IEquatable<LobbyPlayer>
 {
@@ -21,37 +23,53 @@ public struct LobbyPlayer : INetworkSerializable, System.IEquatable<LobbyPlayer>
         serializer.SerializeValue(ref ping);
     }
 
-    public bool Equals(LobbyPlayer other) => clientId == other.clientId && ready == other.ready && name.Equals(other.name) && color == other.color && ping == other.ping;
+    public bool Equals(LobbyPlayer other) =>
+        clientId == other.clientId && ready == other.ready && name.Equals(other.name)
+        && color == other.color && ping == other.ping;
 }
 
+[RequireComponent(typeof(UIDocument))]
 public class LobbyManager : NetworkBehaviour
 {
     public static LobbyManager Instance { get; private set; }
-    [SerializeField] private Font font;
 
-    private static readonly Color Yellow = new Color(1f, 0.92f, 0.016f, 1f);
     private static readonly Color[] PlayerColors =
     {
         new Color(0.20f, 0.90f, 0.20f), new Color(0.30f, 0.30f, 1.00f),
         new Color(1.00f, 0.25f, 0.25f), new Color(1.00f, 0.85f, 0.10f),
         new Color(0.80f, 0.30f, 0.90f), new Color(0.20f, 0.85f, 0.90f),
-        new Color(1.00f, 0.55f, 0.10f), new Color(1.0f, 0.41f, 0.71f)
+        new Color(1.00f, 0.55f, 0.10f), new Color(1.00f, 0.41f, 0.71f)
     };
+
+    private static readonly Color PingGood = new Color(0.5f, 1f, 0.4f);
+    private static readonly Color PingOk = new Color(1f, 0.85f, 0.2f);
+    private static readonly Color PingBad = new Color(1f, 0.35f, 0.3f);
+    private static readonly Color Dim = new Color(1f, 1f, 1f, 0.4f);
 
     private NetworkList<LobbyPlayer> players;
 
     // chat/name input
     private enum InputMode { None, Chat, Name }
-    private struct ChatLine { public string text; public float time; }
-
-    private readonly List<ChatLine> chatLog = new();
     private InputMode mode = InputMode.None;
-    private string inputText = "";
     private string nameInput = "";
-    private bool focusPending;
-    private int openFrame = -1;
+    private bool inputFocused;
+    private bool localReady;
     private float copiedUntil;
     private float nextPing;
+
+    // UI
+    private class Row
+    {
+        public VisualElement root, avatar;
+        public Label ping, status, name, host;
+    }
+
+    private readonly List<Row> rows = new();
+    private VisualElement root, playerList, inputRow;
+    private Label codeLabel, waitingLabel, inputLabel;
+    private ScrollView chatScroll;
+    private TextField inputField;
+    private Button colorBtn, nameBtn, muteBtn, leaveBtn, copyBtn, startBtn;
 
     private ProximityVoice voice;
     private ProximityVoice Voice
@@ -69,9 +87,18 @@ public class LobbyManager : NetworkBehaviour
         players = new NetworkList<LobbyPlayer>();
     }
 
+    private void OnEnable() => TryBind();
+
     public override void OnNetworkSpawn()
     {
-        mode = InputMode.None;
+        TryBind();
+        if (root != null) root.style.display = DisplayStyle.Flex;
+        if (chatScroll != null) chatScroll.contentContainer.Clear();
+        CloseInput(false);
+
+        UnityEngine.Cursor.lockState = CursorLockMode.None;
+        UnityEngine.Cursor.visible = true;
+
         nameInput = PlayerName.Load();
         ApplyName();
 
@@ -86,6 +113,8 @@ public class LobbyManager : NetworkBehaviour
 
     public override void OnNetworkDespawn()
     {
+        if (root != null) root.style.display = DisplayStyle.None;
+
         if (!IsServer || NetworkManager.Singleton == null) return;
 
         NetworkManager.Singleton.OnClientConnectedCallback -= AddPlayer;
@@ -93,10 +122,10 @@ public class LobbyManager : NetworkBehaviour
     }
 
     // Server-side
-    private void Update()
+    private void ServerPing()
     {
-        // Host measures everyones ping and syncs it through the player list
-        if (!IsSpawned || !IsServer || Time.time < nextPing) return;
+        // Host measures everyone's ping and syncs it through the player list
+        if (Time.time < nextPing) return;
         nextPing = Time.time + 2f;
 
         var utp = NetworkManager.NetworkConfig.NetworkTransport as UnityTransport;
@@ -209,12 +238,7 @@ public class LobbyManager : NetworkBehaviour
         string who = i >= 0 ? PlainName(i) : "???";
         Color c = i >= 0 ? PlayerColors[players[i].color % PlayerColors.Length] : Color.white;
 
-        chatLog.Add(new ChatLine
-        {
-            text = $"<color=#{ColorUtility.ToHtmlStringRGB(c)}>{Clean(who)}</color>: {Clean(message.ToString())}",
-            time = Time.time
-        });
-        if (chatLog.Count > 50) chatLog.RemoveAt(0);
+        AddChatLine($"<color=#{ColorUtility.ToHtmlStringRGB(c)}>{Clean(who)}</color>: {Clean(message.ToString())}");
     }
 
     // The host doesn't need to ready up, but everyone else does
@@ -227,7 +251,6 @@ public class LobbyManager : NetworkBehaviour
     }
 
     // Helpers
-    // Stops players from injecting rich-text tags into names/chat
     private static string Clean(string s) => s.Replace("<", "‹");
 
     private string PlainName(int index)
@@ -246,283 +269,267 @@ public class LobbyManager : NetworkBehaviour
         SetNameRpc(n);
     }
 
+    // UI
+    private bool TryBind()
+    {
+        if (root != null && root.panel != null) return true;
+
+        var doc = GetComponent<UIDocument>();
+        if (doc == null || doc.rootVisualElement == null) return false;
+
+        var r = doc.rootVisualElement.Q("lobby-root");
+        if (r == null) return false;
+        root = r;
+        rows.Clear();
+
+        playerList = root.Q("player-list");
+        codeLabel = root.Q<Label>("code");
+        waitingLabel = root.Q<Label>("waiting");
+        chatScroll = root.Q<ScrollView>("chat");
+        inputRow = root.Q("input-row");
+        inputLabel = root.Q<Label>("input-label");
+        inputField = root.Q<TextField>("input-field");
+
+        colorBtn = root.Q<Button>("color-btn");
+        nameBtn = root.Q<Button>("name-btn");
+        muteBtn = root.Q<Button>("mute-btn");
+        leaveBtn = root.Q<Button>("leave-btn");
+        copyBtn = root.Q<Button>("copy-btn");
+        startBtn = root.Q<Button>("start-btn");
+
+        colorBtn.clicked += () => ChangeColorRpc();
+        nameBtn.clicked += () => OpenInput(InputMode.Name);
+        muteBtn.clicked += () =>
+        {
+            var v = Voice;
+            if (v != null) v.SetMuted(!v.IsMuted);
+        };
+        leaveBtn.clicked += () =>
+        {
+            var ui = FindFirstObjectByType<SessionUI>();
+            if (ui != null) ui.LeaveSession();
+        };
+        copyBtn.clicked += () =>
+        {
+            GUIUtility.systemCopyBuffer = SessionUI.JoinCode;
+            copiedUntil = Time.time + 2f;
+        };
+        startBtn.clicked += OnStartClicked;
+
+        // Clicking away from the text box cancels it
+        inputField.RegisterCallback<FocusInEvent>(_ => inputFocused = true);
+        inputField.RegisterCallback<FocusOutEvent>(_ =>
+        {
+            if (inputFocused && mode != InputMode.None) CloseInput(false);
+            inputFocused = false;
+        });
+
+        root.style.display = IsSpawned ? DisplayStyle.Flex : DisplayStyle.None;
+        return true;
+    }
+
+    private void OnStartClicked()
+    {
+        if (IsServer)
+        {
+            if (AllClientsReady()) GameFlow.Instance.StartGame();
+        }
+        else
+        {
+            SetReadyRpc(!localReady);
+        }
+    }
+
     private void OpenInput(InputMode m)
     {
         mode = m;
-        inputText = m == InputMode.Name ? nameInput : "";
-        focusPending = true;
-        openFrame = Time.frameCount;
+        inputLabel.text = m == InputMode.Chat ? "SAY:" : "NAME:";
+        inputField.maxLength = m == InputMode.Name ? PlayerName.MaxLength : 100;
+        inputRow.style.display = DisplayStyle.Flex;
+
+        // Wait a moment before focusing, so the "t" that opened the chat doesn't get typed into it
+        inputField.schedule.Execute(() =>
+        {
+            if (mode != m) return; // closed in the meantime
+            inputField.value = m == InputMode.Name ? nameInput : "";
+            inputField.Focus();
+        }).StartingIn(40);
     }
 
-    private void CloseInput()
+    private void CloseInput(bool blur = true)
     {
         mode = InputMode.None;
-        GUI.FocusControl(null);
+        inputFocused = false;
+        if (inputRow != null) inputRow.style.display = DisplayStyle.None;
+        if (blur && inputField != null) inputField.Blur();
     }
 
     private void SubmitInput()
     {
+        string text = inputField.value;
+
         if (mode == InputMode.Chat)
         {
-            string msg = inputText.Trim();
+            string msg = text.Trim();
             if (msg.Length > 100) msg = msg.Substring(0, 100);
             if (msg.Length > 0) SendChatRpc(msg);
         }
         else if (mode == InputMode.Name)
         {
-            nameInput = inputText;
+            nameInput = text;
             ApplyName();
         }
+
         CloseInput();
     }
 
-    // UI
-    private GUIStyle title, subtitle, subtitleRight, rowName, rowPing, rowStatus;
-    private GUIStyle btnBig, btnBigRight, btnBigCenter, btnSmall, btnSmallRight, chatStyle, field;
-
-    private GUIStyle Make(TextAnchor align, Color color, FontStyle fs = FontStyle.Normal, bool hover = false)
+    private void AddChatLine(string richText)
     {
-        var st = new GUIStyle { alignment = align, fontStyle = fs, richText = true };
-        if (font != null) st.font = font;
-        st.normal.textColor = color;
-        if (hover)
+        if (chatScroll == null) return;
+
+        var line = new Label(richText) { enableRichText = true };
+        line.AddToClassList("chat-line");
+        chatScroll.contentContainer.Add(line);
+
+        while (chatScroll.contentContainer.childCount > 50)
+            chatScroll.contentContainer.RemoveAt(0);
+
+        // scroll down once the layout has caught up
+        chatScroll.schedule.Execute(() =>
+            chatScroll.verticalScroller.value = chatScroll.verticalScroller.highValue).StartingIn(50);
+    }
+
+    private Row MakeRow()
+    {
+        var row = new Row();
+
+        row.root = new VisualElement();
+        row.root.AddToClassList("player-row");
+
+        row.ping = new Label();
+        row.ping.AddToClassList("player-ping");
+        row.status = new Label();
+        row.status.AddToClassList("player-status");
+        row.name = new Label();
+        row.name.AddToClassList("player-name");
+        row.host = new Label("[HOST]");
+        row.host.AddToClassList("player-host");
+
+        row.avatar = new VisualElement();
+        row.avatar.AddToClassList("avatar");
+        for (int i = 0; i < 2; i++)
         {
-            st.hover.textColor = Yellow;
-            st.active.textColor = Yellow;
+            var eye = new VisualElement();
+            eye.AddToClassList("avatar__eye");
+            var pupil = new VisualElement();
+            pupil.AddToClassList("avatar__pupil");
+            eye.Add(pupil);
+            row.avatar.Add(eye);
         }
-        return st;
+
+        row.root.Add(row.ping);
+        row.root.Add(row.status);
+        row.root.Add(row.name);
+        row.root.Add(row.host);
+        row.root.Add(row.avatar);
+
+        playerList.Add(row.root);
+        return row;
     }
 
-    private void BuildStyles()
+    private void RefreshPlayers()
     {
-        if (title != null) return;
+        var nm = NetworkManager.Singleton;
+        if (nm == null) return;
 
-        var gray = new Color(1f, 1f, 1f, 0.55f);
-        var soft = new Color(1f, 1f, 1f, 0.85f);
+        while (rows.Count < players.Count) rows.Add(MakeRow());
+        while (rows.Count > players.Count)
+        {
+            rows[rows.Count - 1].root.RemoveFromHierarchy();
+            rows.RemoveAt(rows.Count - 1);
+        }
 
-        title = Make(TextAnchor.MiddleLeft, Yellow, FontStyle.BoldAndItalic);
-        subtitle = Make(TextAnchor.MiddleLeft, gray);
-        subtitleRight = Make(TextAnchor.MiddleRight, gray);
-        rowName = Make(TextAnchor.MiddleRight, soft);
-        rowPing = Make(TextAnchor.MiddleLeft, Color.white);
-        rowStatus = Make(TextAnchor.MiddleLeft, gray);
-        btnBig = Make(TextAnchor.MiddleLeft, soft, FontStyle.Normal, true);
-        btnBigRight = Make(TextAnchor.MiddleRight, soft, FontStyle.Normal, true);
-        btnSmall = Make(TextAnchor.MiddleLeft, Yellow, FontStyle.Normal, true);
-        btnSmall.hover.textColor = Color.white;
-        btnSmall.active.textColor = Color.white;
-        btnBigCenter = Make(TextAnchor.MiddleCenter, soft, FontStyle.Normal, true);
-        btnSmallRight = Make(TextAnchor.MiddleRight, Yellow, FontStyle.Normal, true);
-        btnSmallRight.hover.textColor = Color.white;
-        btnSmallRight.active.textColor = Color.white;
-        chatStyle = Make(TextAnchor.UpperLeft, Color.white);
-        chatStyle.wordWrap = true;
+        localReady = false;
+        for (int i = 0; i < players.Count; i++)
+        {
+            var p = players[i];
+            var r = rows[i];
+            bool isHost = p.clientId == NetworkManager.ServerClientId;
+            bool isMe = p.clientId == nm.LocalClientId;
+            if (isMe) localReady = p.ready;
 
-        field = new GUIStyle(GUI.skin.textField) { alignment = TextAnchor.MiddleLeft };
-        if (font != null) field.font = font;
-    }
+            r.root.EnableInClassList("player-row--me", isMe);
+            r.name.text = PlainName(i);
+            r.host.style.display = isHost ? DisplayStyle.Flex : DisplayStyle.None;
+            r.avatar.style.backgroundColor = PlayerColors[p.color % PlayerColors.Length];
 
-    private void ScaleStyles(float s)
-    {
-        title.fontSize = Mathf.RoundToInt(120 * s);
-        subtitle.fontSize = subtitleRight.fontSize = Mathf.RoundToInt(24 * s);
-        rowName.fontSize = Mathf.RoundToInt(34 * s);
-        rowPing.fontSize = Mathf.RoundToInt(26 * s);
-        rowStatus.fontSize = Mathf.RoundToInt(20 * s);
-        btnBig.fontSize = btnBigRight.fontSize = btnBigCenter.fontSize = Mathf.RoundToInt(46 * s);
-        btnSmall.fontSize = btnSmallRight.fontSize = Mathf.RoundToInt(26 * s);
-        chatStyle.fontSize = Mathf.RoundToInt(26 * s);
-        field.fontSize = Mathf.RoundToInt(26 * s);
-    }
-
-    private static void Fill(Rect r, Color c)
-    {
-        Color old = GUI.color;
-        GUI.color = c;
-        GUI.DrawTexture(r, Texture2D.whiteTexture);
-        GUI.color = old;
-    }
-
-    private static void DrawAvatar(Rect r, Color c)
-    {
-        Color old = GUI.color;
-
-        GUI.color = c;
-        GUI.DrawTexture(r, Texture2D.whiteTexture);
-
-        float ew = r.width * 0.28f, eh = r.height * 0.42f, ey = r.y + r.height * 0.22f;
-        var left = new Rect(r.x + r.width * 0.14f, ey, ew, eh);
-        var right = new Rect(r.xMax - r.width * 0.14f - ew, ey, ew, eh);
-
-        GUI.color = Color.white;
-        GUI.DrawTexture(left, Texture2D.whiteTexture);
-        GUI.DrawTexture(right, Texture2D.whiteTexture);
-
-        GUI.color = Color.black;
-        GUI.DrawTexture(new Rect(left.x + ew * 0.3f, left.y + eh * 0.3f, ew * 0.45f, eh * 0.45f), Texture2D.whiteTexture);
-        GUI.DrawTexture(new Rect(right.x + ew * 0.3f, right.y + eh * 0.3f, ew * 0.45f, eh * 0.45f), Texture2D.whiteTexture);
-
-        GUI.color = old;
+            if (isHost)
+            {
+                r.ping.text = "—";
+                r.ping.style.color = Dim;
+                r.status.text = "";
+            }
+            else
+            {
+                r.ping.text = $"{p.ping} ms";
+                r.ping.style.color = p.ping < 80 ? PingGood : p.ping < 150 ? PingOk : PingBad;
+                r.status.text = p.ready ? "READY" : "NOT READY";
+                r.status.style.color = p.ready ? PingGood : Dim;
+            }
+        }
     }
 
     private void HandleKeys()
     {
-        Event e = Event.current;
-        if (e.type != EventType.KeyDown) return;
+        var kb = Keyboard.current;
+        if (kb == null) return;
 
         if (mode == InputMode.None)
         {
-            if (e.keyCode == KeyCode.T) { OpenInput(InputMode.Chat); e.Use(); }
+            if (kb.tKey.wasPressedThisFrame) OpenInput(InputMode.Chat);
         }
-        else if (e.keyCode == KeyCode.Escape) { CloseInput(); e.Use(); }
-        else if (e.keyCode == KeyCode.Return || e.keyCode == KeyCode.KeypadEnter) { SubmitInput(); e.Use(); }
-        else if (e.keyCode == KeyCode.None && Time.frameCount == openFrame) e.Use();
+        else if (kb.escapeKey.wasPressedThisFrame)
+        {
+            CloseInput();
+        }
+        else if (kb.enterKey.wasPressedThisFrame || kb.numpadEnterKey.wasPressedThisFrame)
+        {
+            SubmitInput();
+        }
     }
 
-    private void OnGUI()
+    private void Update()
     {
-        if (!IsSpawned) return;
+        if (!IsSpawned || !TryBind()) return;
 
-        BuildStyles();
-        float s = Screen.height / 1080f;
-        ScaleStyles(s);
         HandleKeys();
 
-        Fill(new Rect(0, 0, Screen.width, Screen.height), new Color(0f, 0f, 0f, 0.35f));
-        float margin = 60 * s;
-        var panel = new Rect(margin, margin, Screen.width - margin * 2, Screen.height - margin * 2);
-        Fill(panel, new Color(0f, 0f, 0f, 0.6f));
-
-        float pad = 40 * s;
-        float px = panel.x + pad;
-        float iw = panel.width - pad * 2;
-        float gap = 60 * s;
-        float colW = (iw - gap) / 2f;
-        float rightColX = px + colW + gap;
-
         // Header
-        GUI.Label(new Rect(px, panel.y + 10 * s, colW, 120 * s), "LOBBY", title);
-        if (!string.IsNullOrEmpty(SessionUI.JoinCode))
-            GUI.Label(new Rect(px, panel.y + 40 * s, iw, 36 * s), $"CODE: {SessionUI.JoinCode}", subtitleRight);
-        GUI.Label(new Rect(px, panel.y + 80 * s, iw, 30 * s), "PRESS T TO CHAT", subtitleRight);
-        if (IsServer && !AllClientsReady())
-            GUI.Label(new Rect(px, panel.y + 112 * s, iw, 30 * s), "WAITING FOR PLAYERS TO READY UP", subtitleRight);
+        bool hasCode = !string.IsNullOrEmpty(SessionUI.JoinCode);
+        codeLabel.text = hasCode ? $"CODE: {SessionUI.JoinCode}" : "";
+        waitingLabel.text = IsServer && !AllClientsReady() ? "WAITING FOR PLAYERS TO READY UP" : "";
 
-        // Layout anchors
-        float ry = panel.y + 190 * s;
-        float rowH = 64 * s;
-        float row2Y = panel.yMax - 20 * s - 56 * s;
-        float stackY = row2Y - 3 * 36 * s - 6 * s;
-        float inputY = stackY - 56 * s;
+        RefreshPlayers();
 
-        // Player rows
-        bool localReady = false;
-        for (int i = 0; i < players.Count; i++)
-        {
-            var p = players[i];
-            bool isHost = p.clientId == NetworkManager.ServerClientId;
-            bool isMe = p.clientId == NetworkManager.Singleton.LocalClientId;
-            if (isMe) localReady = p.ready;
-
-            float y = ry + i * rowH;
-            var row = new Rect(px - 10 * s, y, colW + 20 * s, rowH - 8 * s);
-            if (isMe) Fill(row, new Color(1f, 1f, 1f, 0.06f));
-
-            if (isHost)
-            {
-                rowPing.normal.textColor = new Color(1f, 1f, 1f, 0.4f);
-                GUI.Label(new Rect(px, y, 120 * s, row.height), "—", rowPing);
-            }
-            else
-            {
-                rowPing.normal.textColor = p.ping < 80 ? new Color(0.5f, 1f, 0.4f) : p.ping < 150 ? new Color(1f, 0.85f, 0.2f) : new Color(1f, 0.35f, 0.3f);
-                GUI.Label(new Rect(px, y, 120 * s, row.height), $"{p.ping} ms", rowPing);
-
-                rowStatus.normal.textColor = p.ready ? new Color(0.5f, 1f, 0.4f) : new Color(1f, 1f, 1f, 0.4f);
-                GUI.Label(new Rect(px + 125 * s, y, 140 * s, row.height), p.ready ? "READY" : "NOT READY", rowStatus);
-            }
-
-            string nm = Clean(PlainName(i)) + (isHost ? "  <color=#FF9900>[HOST]</color>" : "");
-            GUI.Label(new Rect(px + 250 * s, y, colW - 250 * s - 72 * s, row.height), nm, rowName);
-            DrawAvatar(new Rect(px + colW - 60 * s, y + 4 * s, 56 * s, row.height - 8 * s), PlayerColors[p.color % PlayerColors.Length]);
-        }
-
-        // Chat box
-        var chatBox = new Rect(rightColX, ry, colW, inputY - 10 * s - ry);
-        if (chatBox.height > 20 * s)
-        {
-            Fill(chatBox, new Color(1f, 1f, 1f, 0.04f));
-            var inner = new Rect(chatBox.x + 12 * s, chatBox.y + 8 * s, chatBox.width - 24 * s, chatBox.height - 16 * s);
-
-            float yy = inner.yMax;
-            for (int i = chatLog.Count - 1; i >= 0; i--)
-            {
-                var content = new GUIContent(chatLog[i].text);
-                float h = chatStyle.CalcHeight(content, inner.width);
-                yy -= h;
-                if (yy < inner.y) break;
-                GUI.Label(new Rect(inner.x, yy, inner.width, h), content, chatStyle);
-            }
-        }
-
-        // Input row
-        if (mode != InputMode.None)
-        {
-            GUI.Label(new Rect(rightColX, inputY, 100 * s, 44 * s), mode == InputMode.Chat ? "SAY:" : "NAME:", btnSmall);
-
-            GUI.SetNextControlName("Input");
-            int max = mode == InputMode.Name ? PlayerName.MaxLength : 100;
-            inputText = GUI.TextField(new Rect(rightColX + 100 * s, inputY, colW - 100 * s, 44 * s), inputText ?? "", max, field);
-
-            if (focusPending && Time.frameCount > openFrame)
-            {
-                GUI.FocusControl("Input");
-                focusPending = false;
-            }
-        }
-
-        // Small buttons
-        float stackX = px + iw - 300 * s;
-
-        if (GUI.Button(new Rect(stackX, stackY, 300 * s, 34 * s), "CHANGE COLOR", btnSmallRight))
-            ChangeColorRpc();
-
-        if (GUI.Button(new Rect(stackX, stackY + 36 * s, 300 * s, 34 * s), "CHANGE NAME", btnSmallRight))
-            OpenInput(InputMode.Name);
-
+        // Buttons
         var v = Voice;
-        if (v != null && GUI.Button(new Rect(stackX, stackY + 72 * s, 300 * s, 34 * s), v.IsMuted ? "UNMUTE MIC" : "MUTE MIC", btnSmallRight))
-            v.SetMuted(!v.IsMuted);
+        muteBtn.style.display = v != null ? DisplayStyle.Flex : DisplayStyle.None;
+        if (v != null) muteBtn.text = v.IsMuted ? "UNMUTE MIC" : "MUTE MIC";
 
-        // Bottom row
-        if (GUI.Button(new Rect(px, row2Y, 240 * s, 56 * s), "LEAVE", btnBig))
-        {
-            var ui = FindFirstObjectByType<SessionUI>();
-            if (ui != null) ui.LeaveSession();
-        }
+        copyBtn.style.visibility = hasCode ? Visibility.Visible : Visibility.Hidden;
+        copyBtn.text = Time.time < copiedUntil ? "COPIED!" : "COPY CODE";
 
-        if (!string.IsNullOrEmpty(SessionUI.JoinCode))
-        {
-            string inviteLabel = Time.time < copiedUntil ? "COPIED!" : "CODY CODE";
-            if (GUI.Button(new Rect(px + iw / 2f - 150 * s, row2Y, 300 * s, 56 * s), inviteLabel, btnBigCenter))
-            {
-                GUIUtility.systemCopyBuffer = SessionUI.JoinCode;
-                copiedUntil = Time.time + 2f;
-            }
-        }
-
-        var bigRight = new Rect(px + iw - 400 * s, row2Y, 400 * s, 56 * s);
         if (IsServer)
         {
-            GUI.enabled = AllClientsReady();
-            if (GUI.Button(bigRight, "START GAME", btnBigRight))
-                GameFlow.Instance.StartGame();
-            GUI.enabled = true;
+            startBtn.text = "START GAME";
+            startBtn.SetEnabled(AllClientsReady());
         }
         else
         {
-            if (GUI.Button(bigRight, localReady ? "NOT READY" : "READY", btnBigRight))
-                SetReadyRpc(!localReady);
+            startBtn.text = localReady ? "NOT READY" : "READY";
+            startBtn.SetEnabled(true);
         }
+
+        if (IsServer) ServerPing();
     }
 }

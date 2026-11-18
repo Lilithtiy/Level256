@@ -1,0 +1,4 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:Label name="info" class="panel-instruction" />
+    <ui:VisualElement name="pads" class="row" />
+</ui:UXML>

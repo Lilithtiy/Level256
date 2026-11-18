@@ -7,39 +7,29 @@ public abstract class CodeTask : StationTask
     [SerializeField] private float wrongNoiseRadius = 20f;
     [SerializeField] private float wrongNoiseSeconds = 3f;
 
-    public NetworkVariable<int> Code = new(
-        0,
-        NetworkVariableReadPermission.Everyone,
-        NetworkVariableWritePermission.Server);
+    public NetworkVariable<int> Code = new(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
     public override TaskMode Mode => TaskMode.Panel;
 
-    private string message = "";
-    private float messageUntil;
-
-    // Host checks the answer
     [Rpc(SendTo.Server)]
     public void SubmitCodeRpc(int code, RpcParams rpcParams = default)
     {
         if (!CanWork || !IsWorker(rpcParams.Receive.SenderClientId)) return;
 
-        if (code == Code.Value)
-        {
-            FinishNow();
-        }
-        else if (NoiseTracker.Instance != null)
-        {
-            // A wrong answer sets off an alarm that ghosts can hear
-            NoiseTracker.Instance.EmitNoise(transform.position, wrongNoiseRadius, wrongNoiseSeconds);
-        }
+        bool ok = code == Code.Value;
+        if (ok) FinishNow();
+        else EmitAlarm(wrongNoiseRadius, wrongNoiseSeconds);
+
+        CodeResultRpc(ok);
     }
 
-    protected void ShowMessage(string text, float seconds = 1.5f)
+    [Rpc(SendTo.Everyone)]
+    private void CodeResultRpc(bool ok)
     {
-        message = text;
-        messageUntil = Time.time + seconds;
+        // Only players who currently have this panel open care
+        if (TaskPanelHost.Instance != null && TaskPanelHost.Instance.Open == this)
+            OnCodeResult(ok);
     }
 
-    protected string CurrentMessage =>
-        (Time.time < messageUntil && !string.IsNullOrEmpty(message)) ? message : " ";
+    protected virtual void OnCodeResult(bool ok) { }
 }

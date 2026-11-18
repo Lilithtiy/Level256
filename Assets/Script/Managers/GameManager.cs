@@ -35,6 +35,7 @@ public class GameManager : NetworkBehaviour
         NetworkVariableWritePermission.Server);
 
     public event System.Action OnRoundStarted;
+    public event System.Action<ulong> OnPlayerCaught;
 
     private readonly Dictionary<ulong, float> safeUntil = new();
 
@@ -72,6 +73,7 @@ public class GameManager : NetworkBehaviour
 
         safeUntil[clientId] = Time.time + safeSeconds;
         Lives.Value--;
+        OnPlayerCaught?.Invoke(clientId);
         Debug.Log($"Caught client {clientId}. Lives left: {Lives.Value}");
 
         bool gameOver = Lives.Value <= 0;
@@ -112,8 +114,6 @@ public class GameManager : NetworkBehaviour
     private void OnGUI()
     {
         if (!IsSpawned) return;
-
-        GUI.Label(new Rect(Screen.width - 160, 10, 150, 30), $"Lives: {Lives.Value}");
 
         if (State.Value == GameState.GameOver) DrawEndScreen("GAME OVER", Color.red);
         else if (State.Value == GameState.Won) DrawEndScreen("YOU ESCAPED!", Color.green);
