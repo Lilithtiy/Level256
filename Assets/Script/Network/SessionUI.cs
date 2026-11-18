@@ -139,6 +139,7 @@ public class SessionUI : MonoBehaviour
 
     private void GoToBoot()
     {
+        Cursor.lockState = CursorLockMode.None; Cursor.visible = true;
         if (SceneManager.GetActiveScene().name != bootSceneName)
             SceneManager.LoadScene(bootSceneName);
     }
