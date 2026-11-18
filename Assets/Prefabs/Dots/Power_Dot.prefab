@@ -71,7 +71,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 2003520710
+  GlobalObjectIdHash: 1330608553
   InScenePlacedSourceGlobalObjectIdHash: 147791018
   m_InScenePlacedDisabledByDefault: 0
   DeferredDespawnTick: 0
@@ -190,6 +190,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::OnPowerDotCollision
   ShowTopMostFoldoutHeaderGroup: 1
   scoreValue: 50
+  powerDotCollisionAudio: {fileID: 11400000, guid: 7e6a16eb810f98349bf5cb115bfbb2d6, type: 2}
 --- !u!1 &8145313939593123140
 GameObject:
   m_ObjectHideFlags: 0

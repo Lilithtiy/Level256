@@ -40,7 +40,7 @@ public class PlayerController : NetworkBehaviour
     [SerializeField] private float holdSeconds = 1.0f;
     [SerializeField] private float fadeSeconds = 0.6f;
     [SerializeField] private float maxFlash = 0.7f;
-    [SerializeField] private AudioClip catchClip;
+    [SerializeField] private ScriptableAudio catchClip;
     private bool isCaught;
     private float flashAlpha;
     private Coroutine catchRoutine;
@@ -234,7 +234,7 @@ public class PlayerController : NetworkBehaviour
         isCaught = true;
 
         if (catchClip != null)
-            AudioSource.PlayClipAtPoint(catchClip, cameraTransform.position);
+            AudioManager.audioManagerInstance.PlayAt(catchClip, cameraTransform.position);
 
         // Work out where to look, so the body yaw and camera pitch
         Vector3 flat = ghostPos - transform.position;

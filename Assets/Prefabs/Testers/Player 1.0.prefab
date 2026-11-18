@@ -251,7 +251,7 @@ MonoBehaviour:
   holdSeconds: 1
   fadeSeconds: 0.6
   maxFlash: 0.7
-  catchClip: {fileID: 0}
+  catchClip: {fileID: 11400000, guid: 3d28b4f456987564293a9cd0e834cb12, type: 2}
 --- !u!114 &-6588418179630385436
 MonoBehaviour:
   m_ObjectHideFlags: 0

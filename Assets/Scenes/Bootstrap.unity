@@ -306,6 +306,7 @@ MonoBehaviour:
   gameTitle: LEVEL256
   tagline: UP TO 4 PLAYERS
   font: {fileID: 0}
+  bootSceneName: Bootstrap
 --- !u!114 &421671330
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -420,7 +421,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameFlow
   lobbySceneName: Lobby
-  gameSceneName: TheGame
+  gameSceneName: TheGame_Axel
   playerPrefab: {fileID: 5990630632534819751, guid: 5544be014d679cd4fbed60eb334e9b8e, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
