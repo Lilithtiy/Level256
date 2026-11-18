@@ -237,6 +237,13 @@ public abstract class StationTask : NetworkBehaviour
         return InRange(client.PlayerObject.transform.position);
     }
 
+    // A team task that can no longer be finished because a player left
+    public void ServerDeactivate()
+    {
+        ClearWorkers();
+        IsActive.Value = false;
+    }
+
     // Visuals
     private void OnFloatChanged(float previous, float current) => RefreshVisuals();
     private void OnBoolChanged(bool previous, bool current) => RefreshVisuals();
