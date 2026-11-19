@@ -30,7 +30,39 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2413930990461430688}
+  - {fileID: 834402630715602477}
   m_Father: {fileID: 2102786121835448007}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1632224959411332829
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 834402630715602477}
+  m_Layer: 0
+  m_Name: PlayerNameTag
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &834402630715602477
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1632224959411332829}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 1.976, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1605805642952814212}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4250216737426032091
 GameObject:
@@ -83,6 +115,7 @@ GameObject:
   - component: {fileID: -1002864973107310384}
   - component: {fileID: 1540481351236536134}
   - component: {fileID: 829113362855813480}
+  - component: {fileID: 8674779202276131015}
   m_Layer: 0
   m_Name: Player 1.0
   m_TagString: Player
@@ -352,6 +385,26 @@ MonoBehaviour:
   openSpeed: 25
   closeSpeed: 10
   debugLog: 0
+--- !u!114 &8674779202276131015
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5990630632534819751}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d521bfee1f6ca2949b0efd4e6ff68596, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerNameTag
+  ShowTopMostFoldoutHeaderGroup: 1
+  headPoint: {fileID: 834402630715602477}
+  heightOffset: 0.05
+  maxDistance: 20
+  fontSize: 2
+  sizePerMeter: 0.1
+  minScale: 0.3
+  maxScale: 0.6
 --- !u!1 &6997019822837675872
 GameObject:
   m_ObjectHideFlags: 0

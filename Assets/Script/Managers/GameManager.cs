@@ -12,6 +12,7 @@ public class GameManager : NetworkBehaviour
     [SerializeField] private int startingLives = 3;
     [SerializeField] private float safeSeconds = 5f;
     [SerializeField] private Transform[] respawnPoints;
+    [SerializeField] private float spawnHeight = 1.3f;
 
     public NetworkVariable<int> Lives = new(
         3,
@@ -90,16 +91,12 @@ public class GameManager : NetworkBehaviour
 
     public Vector3 GetSpawnPosition(int index)
     {
-        return respawnPoints.Length > 0
-            ? respawnPoints[index % respawnPoints.Length].position
-            : Vector3.zero;
+        return respawnPoints.Length > 0 ? respawnPoints[index % respawnPoints.Length].position + Vector3.up * spawnHeight : Vector3.zero;
     }
 
     private Vector3 GetRandomRespawn()
     {
-        return respawnPoints.Length > 0
-            ? respawnPoints[Random.Range(0, respawnPoints.Length)].position
-            : Vector3.zero;
+        return respawnPoints.Length > 0 ? respawnPoints[Random.Range(0, respawnPoints.Length)].position + Vector3.up * spawnHeight : Vector3.zero;
     }
 
     public void Win()
