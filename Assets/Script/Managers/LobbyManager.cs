@@ -37,7 +37,7 @@ public class LobbyManager : NetworkBehaviour
     [SerializeField] private ScriptableAudio typingAudio;
     [SerializeField] private ScriptableAudio sendMessageAudio;
 
-    private static readonly Color[] PlayerColors =
+    public static readonly Color[] PlayerColors =
     {
         new Color(0.20f, 0.90f, 0.20f), new Color(0.30f, 0.30f, 1.00f),
         new Color(1.00f, 0.25f, 0.25f), new Color(1.00f, 0.85f, 0.10f),
