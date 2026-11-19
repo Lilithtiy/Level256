@@ -1331,24 +1331,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 2197852227685543210, guid: 7466275c6c3deb84ca74beff71108f92, type: 3}
   m_PrefabInstance: {fileID: 453861450}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &453861452 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 7241857276584890435, guid: 7466275c6c3deb84ca74beff71108f92, type: 3}
-  m_PrefabInstance: {fileID: 453861450}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &453861453
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 453861452}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8a19729527779c245b88c142ca980085, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MarkerTarget
-  type: 3
 --- !u!1 &474669687
 GameObject:
   m_ObjectHideFlags: 0
@@ -6711,10 +6693,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 6813213429796734533, guid: dea7fc3bbc7ff9d44a632a282468e885, type: 3}
-      propertyPath: tasksPerRound
-      value: 7
-      objectReference: {fileID: 0}
     - target: {fileID: 7421247162204582887, guid: dea7fc3bbc7ff9d44a632a282468e885, type: 3}
       propertyPath: 'respawnPoints.Array.data[0]'
       value: 
@@ -8180,6 +8158,7 @@ Transform:
   - {fileID: 553190917}
   - {fileID: 1736214169}
   - {fileID: 1624622164}
+  - {fileID: 1679304426}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2008235554

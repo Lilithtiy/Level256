@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 4260580495648951544}
   - component: {fileID: -1900424821288622973}
   - component: {fileID: 1725408857449770425}
+  - component: {fileID: 938697786503339738}
   m_Layer: 0
   m_Name: Dot
   m_TagString: Untagged
@@ -194,6 +195,19 @@ MonoBehaviour:
   AutoUpdateKinematicState: 1
   AutoSetKinematicOnDespawn: 1
 --- !u!114 &1725408857449770425
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7241857276584890435}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8a19729527779c245b88c142ca980085, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MarkerTarget
+  type: 3
+--- !u!114 &938697786503339738
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
