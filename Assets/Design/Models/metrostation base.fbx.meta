@@ -3,7 +3,32 @@ guid: 3e970f4cb80cb094399f83151298f50b
 ModelImporter:
   serializedVersion: 24300
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: train Down
+    second: {fileID: 2100000, guid: 961fc36f4ed8c2c46bb691fcd27e0fc7, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: train Lys
+    second: {fileID: 2100000, guid: bd48f42bf3ba37c45b7999df2cbc525f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: train inside
+    second: {fileID: 2100000, guid: c736764e8ee843e428522c7d6108a6ad, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: train plastic
+    second: {fileID: 2100000, guid: eaf6e2b33e3693543947004380ef96b1, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: train uden
+    second: {fileID: 2100000, guid: e8cccebc4bc7a4940a3b86c9bfdd0094, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

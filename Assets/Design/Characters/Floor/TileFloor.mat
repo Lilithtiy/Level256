@@ -42,11 +42,11 @@ Material:
     m_TexEnvs:
     - _BaseMap:
         m_Texture: {fileID: 2800000, guid: 8c0bde103ba11664e8bc818ad4db9a4d, type: 3}
-        m_Scale: {x: 1.41, y: 2.19}
+        m_Scale: {x: 4, y: 4}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
         m_Texture: {fileID: 2800000, guid: 8c0bde103ba11664e8bc818ad4db9a4d, type: 3}
-        m_Scale: {x: 1.41, y: 2.19}
+        m_Scale: {x: 4, y: 4}
         m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:
         m_Texture: {fileID: 2800000, guid: 29d77da32a7b2ea4eb36a24f40bc2e5d, type: 3}

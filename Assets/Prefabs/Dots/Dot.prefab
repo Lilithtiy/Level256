@@ -101,6 +101,7 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   dotValue: 5
   scoreValue: 10
+  dotCollisionAudio: {fileID: 11400000, guid: f3fa880afe2bd0e4193c623f1680ce43, type: 2}
 --- !u!114 &8570359177445304375
 MonoBehaviour:
   m_ObjectHideFlags: 0

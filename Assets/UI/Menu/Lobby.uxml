@@ -1,0 +1,40 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <Style src="/Assets/UI/Menu/MenuStyles.uss" />
+    <ui:VisualElement name="lobby-root" class="lobby-root">
+        <ui:VisualElement class="lobby-panel">
+
+            <ui:VisualElement class="lobby-header">
+                <ui:Label text="LOBBY" class="lobby-title" />
+                <ui:VisualElement class="lobby-info">
+                    <ui:Label name="code" class="lobby-info__text" />
+                    <ui:Label text="PRESS T TO CHAT" class="lobby-info__text" />
+                    <ui:Label name="waiting" class="lobby-info__text" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+
+            <ui:VisualElement class="lobby-body">
+                <ui:VisualElement name="player-list" class="lobby-col lobby-col--left" />
+                <ui:VisualElement class="lobby-col">
+                    <ui:ScrollView name="chat" class="chat-scroll" />
+                    <ui:VisualElement name="input-row" class="input-row">
+                        <ui:Label name="input-label" class="input-label" />
+                        <ui:TextField name="input-field" class="field field--left" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+            </ui:VisualElement>
+
+            <ui:VisualElement class="small-buttons">
+                <ui:Button name="color-btn" text="CHANGE COLOR" class="btn btn--small" />
+                <ui:Button name="name-btn" text="CHANGE NAME" class="btn btn--small" />
+                <ui:Button name="mute-btn" text="MUTE MIC" class="btn btn--small" />
+            </ui:VisualElement>
+
+            <ui:VisualElement class="lobby-footer">
+                <ui:Button name="leave-btn" text="LEAVE" class="btn btn--big btn--left" />
+                <ui:Button name="copy-btn" text="COPY CODE" class="btn btn--big btn--center" />
+                <ui:Button name="start-btn" text="START GAME" class="btn btn--big btn--right" />
+            </ui:VisualElement>
+
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

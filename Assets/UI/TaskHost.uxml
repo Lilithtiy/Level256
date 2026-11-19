@@ -1,0 +1,22 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <Style src="TaskPanel.uss" />
+    <ui:VisualElement class="fill" picking-mode="Ignore">
+        <ui:VisualElement name="prompt" class="prompt" picking-mode="Ignore">
+            <ui:Label name="prompt-text" class="prompt__text" picking-mode="Ignore" />
+        </ui:VisualElement>
+        <ui:VisualElement name="hold" class="hold" picking-mode="Ignore">
+            <ui:Label name="hold-label" class="hold__label" picking-mode="Ignore" />
+            <ui:VisualElement class="hold__track" picking-mode="Ignore">
+                <ui:VisualElement name="hold-fill" class="hold__fill" picking-mode="Ignore" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="overlay" class="overlay">
+            <ui:VisualElement class="panel">
+                <ui:Label name="title" class="panel-title" />
+                <ui:VisualElement name="content" />
+                <ui:Label name="status" class="panel-status" />
+                <ui:Label text="E / ESC to close" class="panel-hint" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
