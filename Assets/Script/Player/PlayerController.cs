@@ -2,6 +2,7 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using System.Collections;
+using Unity.Netcode.Components;
 
 [RequireComponent(typeof(CharacterController))]
 public class PlayerController : NetworkBehaviour
@@ -63,6 +64,23 @@ public class PlayerController : NetworkBehaviour
     private float feetY;
 
     public bool IsCrouching => isCrouching.Value;
+
+    public void TeleportTo(Vector3 position, float yaw)
+    {
+        if (!IsOwner) return;
+
+        Quaternion rotation = Quaternion.Euler(0f, yaw, 0f);
+
+        controller.enabled = false;
+
+        if (TryGetComponent(out NetworkTransform networkTransform))
+            networkTransform.Teleport(position, rotation, transform.localScale);
+        else
+            transform.SetPositionAndRotation(position, rotation);
+
+        controller.enabled = true;
+        verticalVelocity = 0f;
+    }
 
     private void Awake()
     {
