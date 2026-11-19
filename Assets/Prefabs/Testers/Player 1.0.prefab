@@ -182,6 +182,11 @@ MonoBehaviour:
   crouchSpeed: 1.5
   jumpHeight: 1.2
   gravity: -20
+  footstepAudio: {fileID: 11400000, guid: 0f83ba6fe974e8b419edbf163999d6f0, type: 2}
+  walkStepInterval: 0.55
+  runStepInterval: 0.35
+  crouchStepInterval: 0.8
+  movementThreshold: 0.1
   visual: {fileID: 1605805642952814212}
   standHeight: 1.8
   crouchHeight: 0.7

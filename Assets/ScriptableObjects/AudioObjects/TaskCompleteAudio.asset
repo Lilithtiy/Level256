@@ -17,8 +17,8 @@ MonoBehaviour:
   volume: 1
   pitch: 1
   randomPitch: 0
-  spatialBlend: 0
-  minDistance: 1
+  spatialBlend: 1
+  minDistance: 3
   maxDistance: 15
   looping: 0
   mixerGroup: {fileID: -2685829756001165608, guid: ff0432945f02ee44997548c1440a2e74, type: 2}

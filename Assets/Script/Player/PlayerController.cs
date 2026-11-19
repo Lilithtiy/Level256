@@ -20,6 +20,17 @@ public class PlayerController : NetworkBehaviour
     [SerializeField] private float jumpHeight = 1.2f;
     [SerializeField] private float gravity = -20f;
 
+    [Header("Footsteps")]
+    [SerializeField] private ScriptableAudio footstepAudio;
+
+    [SerializeField] private float walkStepInterval = 0.55f;
+    [SerializeField] private float runStepInterval = 0.35f;
+    [SerializeField] private float crouchStepInterval = 0.8f;
+
+    [SerializeField] private float movementThreshold = 0.1f;
+
+    private float nextFootstepTime;
+
     [Header("Crouch")]
     [SerializeField] private Transform visual;
     [SerializeField] private float standHeight = 2f;
@@ -158,6 +169,11 @@ public class PlayerController : NetworkBehaviour
 
         controller.Move(move * Time.deltaTime);
 
+        // Check actual horizontal movement after the CharacterController has moved.
+        Vector3 actualMovement = new Vector3(move.x, 0f, move.z);
+
+        HandleFootsteps(controller.isGrounded, actualMovement, speed);
+
         if (Cursor.lockState == CursorLockMode.Locked)
         {
             lookInput = lookAction.action.ReadValue<Vector2>();
@@ -237,7 +253,7 @@ public class PlayerController : NetworkBehaviour
         isCaught = true;
 
         if (catchClip != null)
-            AudioManager.audioManagerInstance.PlayAt(catchClip, cameraTransform.position);
+            NetworkAudioManager.Instance.PlayNetworked2D(catchClip);
 
         // Work out where to look, so the body yaw and camera pitch
         Vector3 flat = ghostPos - transform.position;
@@ -305,5 +321,23 @@ public class PlayerController : NetworkBehaviour
         bool playing = GameManager.Instance == null ||
                     GameManager.Instance.State.Value == GameState.Playing;
         SetCursorLocked(!locked && playing);
+    }
+
+    private void HandleFootsteps(bool grounded, Vector3 movement, float speed)
+    {
+        // No footsteps while airborne or standing still.
+        if (!grounded || movement.sqrMagnitude < movementThreshold * movementThreshold)
+            return;
+
+        // Determine the interval based on the current movement speed.
+        float stepInterval = IsCrouching ? crouchStepInterval : speed == runSpeed ? runStepInterval : walkStepInterval;
+
+        // Only play a footstep when the timer has elapsed.
+        if (Time.time >= nextFootstepTime)
+        {
+            NetworkAudioManager.Instance.PlayNetworked3D(footstepAudio, transform.position);
+
+            nextFootstepTime = Time.time + stepInterval;
+        }
     }
 }

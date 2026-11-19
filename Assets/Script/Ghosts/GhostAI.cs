@@ -173,7 +173,7 @@ public class GhostAI : NetworkBehaviour
     {
         if (!NetworkObject.IsSpawned) return;
 
-        AudioManager.audioManagerInstance.PlayAt(ghostDeathAudio, transform.position);
+        NetworkAudioManager.Instance.PlayNetworked3D(ghostDeathAudio, transform.position);
         GhostSpawner.Instance.RespawnGhost(ghostPrefab, ghostRespawnDelay);
         NetworkObject.Despawn(true);
     }

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ScriptableAudio
   audioClips:
   - {fileID: 8300000, guid: c83e0eae19477a24f976af883c0f5cb3, type: 3}
-  volume: 0.7
+  volume: 1
   pitch: 1
   randomPitch: 0
   spatialBlend: 1

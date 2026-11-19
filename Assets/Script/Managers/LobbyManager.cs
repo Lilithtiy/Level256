@@ -33,6 +33,8 @@ public class LobbyManager : NetworkBehaviour
 {
     public static LobbyManager Instance { get; private set; }
 
+    [SerializeField] private ScriptableAudio menuSelectAudio;
+
     private static readonly Color[] PlayerColors =
     {
         new Color(0.20f, 0.90f, 0.20f), new Color(0.30f, 0.30f, 1.00f),
@@ -297,22 +299,25 @@ public class LobbyManager : NetworkBehaviour
         copyBtn = root.Q<Button>("copy-btn");
         startBtn = root.Q<Button>("start-btn");
 
-        colorBtn.clicked += () => ChangeColorRpc();
-        nameBtn.clicked += () => OpenInput(InputMode.Name);
-        muteBtn.clicked += () =>
+        colorBtn.clicked += () => ChangeColorRpc(); AudioManager.audioManagerInstance.PlayLocal(menuSelectAudio);
+        nameBtn.clicked += () => OpenInput(InputMode.Name); AudioManager.audioManagerInstance.PlayLocal(menuSelectAudio);
+        muteBtn.clicked += () => 
         {
             var v = Voice;
             if (v != null) v.SetMuted(!v.IsMuted);
+            AudioManager.audioManagerInstance.PlayLocal(menuSelectAudio);
         };
         leaveBtn.clicked += () =>
         {
             var ui = FindFirstObjectByType<SessionUI>();
             if (ui != null) ui.LeaveSession();
+            AudioManager.audioManagerInstance.PlayLocal(menuSelectAudio);
         };
         copyBtn.clicked += () =>
         {
             GUIUtility.systemCopyBuffer = SessionUI.JoinCode;
             copiedUntil = Time.time + 2f;
+            AudioManager.audioManagerInstance.PlayLocal(menuSelectAudio);
         };
         startBtn.clicked += OnStartClicked;
 
@@ -330,6 +335,8 @@ public class LobbyManager : NetworkBehaviour
 
     private void OnStartClicked()
     {
+        AudioManager.audioManagerInstance.PlayLocal(menuSelectAudio);
+
         if (IsServer)
         {
             if (AllClientsReady()) GameFlow.Instance.StartGame();
