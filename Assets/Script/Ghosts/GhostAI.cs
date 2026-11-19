@@ -14,7 +14,26 @@ public class GhostAI : NetworkBehaviour
     [Header("Personality")]
     [SerializeField] private GhostPersonality personality = GhostPersonality.Chaser;
     [SerializeField] private float aheadDistance = 6f;
-    [SerializeField] private float shyDistance = 10f;
+
+    [Header("Shy little guy")]
+    [Tooltip("Speed while nobody is looking at it")]
+    [SerializeField] private float unseenSpeed = 8f;
+    [Tooltip("Nobody further away than this can see it")]
+    [SerializeField] private float watchRange = 50f;
+    [Tooltip("How far from the player's facing direction still counts as looking at it (degrees)")]
+    [SerializeField] private float watchHalfAngle = 55f;
+    [SerializeField] private float shyHuntRange = 80f;
+    [Tooltip("Height above the ghost's pivot that a player needs a clear view of")]
+    [SerializeField] private float watchPointHeight = 0.9f;
+    [SerializeField] private Color stoneColor = new Color(0.45f, 0.45f, 0.45f);
+
+    private readonly NetworkVariable<bool> isWatched = new(
+        false,
+        NetworkVariableReadPermission.Everyone,
+        NetworkVariableWritePermission.Server);
+
+    private Renderer[] renderers;
+    private Color[] baseColors;
 
     [Header("Senses")]
     [SerializeField] private float detectRange = 15f;
@@ -53,10 +72,17 @@ public class GhostAI : NetworkBehaviour
     private void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
+
+        renderers = GetComponentsInChildren<Renderer>();
+        baseColors = new Color[renderers.Length];
+        for (int i = 0; i < renderers.Length; i++)
+            baseColors[i] = renderers[i].material.color;
     }
 
     public override void OnNetworkSpawn()
     {
+        if (personality == GhostPersonality.Shy)
+            isWatched.OnValueChanged += OnWatchedChanged;
 
         if (!IsServer)
         {
@@ -66,6 +92,7 @@ public class GhostAI : NetworkBehaviour
         }
 
         agent.speed = speed;
+        if (personality == GhostPersonality.Shy) agent.acceleration = 60f;   // stops and starts instantly
         homePosition = transform.position;
         allGhosts.Add(this);
     }
@@ -74,7 +101,8 @@ public class GhostAI : NetworkBehaviour
     {
         if (IsServer)
         {
-            allGhosts.Remove(this);
+           isWatched.OnValueChanged -= OnWatchedChanged;
+           if (IsServer) allGhosts.Remove(this);
 
         }
     }
@@ -99,8 +127,14 @@ public class GhostAI : NetworkBehaviour
         // Normal state
         if (gm.ghostState.Value == GhostState.Normal)
         {
+            if (personality == GhostPersonality.Shy)
+            {
+                UpdateShy(gm);
+                return;
+            }
             if (Time.time < stunnedUntil) return;
             if (agent.isStopped) agent.isStopped = false;
+            agent.speed = speed;
 
             if (Time.time < nextRepath) return;
             nextRepath = Time.time + repathInterval;
@@ -252,9 +286,6 @@ public class GhostAI : NetworkBehaviour
                 return SnapToNavMesh(target, player.position);
             }
 
-            case GhostPersonality.Shy:
-                return distance > shyDistance ? player.position : homePosition;
-
             default:
                 return player.position;
         }
@@ -329,5 +360,82 @@ public class GhostAI : NetworkBehaviour
         agent.ResetPath();
         agent.Warp(homePosition);
         agent.isStopped = false;
+    }
+
+
+    private void UpdateShy(GameManager gm)
+    {
+        bool watched = IsObserved();
+        if (watched != isWatched.Value) isWatched.Value = watched;
+
+        if (watched || Time.time < stunnedUntil)
+        {
+            agent.isStopped = true;
+            agent.velocity = Vector3.zero;
+            return;
+        }
+
+        if (agent.isStopped) agent.isStopped = false;
+        agent.speed = unseenSpeed;
+
+        Transform target = FindNearestPlayer(out float distance, out ulong clientId);
+        if (target == null || distance > shyHuntRange) return;
+
+        if (distance <= catchDistance && gm.TryCatchPlayer(clientId, transform.position))
+        {
+            stunnedUntil = Time.time + stunSeconds;
+            agent.ResetPath();
+            agent.isStopped = true;
+            return;
+        }
+
+        if (Time.time < nextRepath) return;
+        nextRepath = Time.time + 0.15f;
+        agent.SetDestination(target.position);
+    }
+
+    private bool IsObserved()
+    {
+        Vector3 point = transform.position + Vector3.up * watchPointHeight;
+
+        foreach (var client in NetworkManager.Singleton.ConnectedClientsList)
+        {
+            var obj = client.PlayerObject;
+            if (obj == null) continue;
+
+            Transform p = obj.transform;
+            bool crouching = obj.TryGetComponent(out PlayerController pc) && pc.IsCrouching;
+            Vector3 eye = p.position + Vector3.up * (crouching ? 1.0f : 1.7f);
+
+            Vector3 toGhost = point - eye;
+            if (toGhost.magnitude > watchRange) continue;
+
+            Vector3 flat = toGhost;
+            flat.y = 0f;
+            Vector3 forward = p.forward;
+            forward.y = 0f;
+
+            if (flat.sqrMagnitude < 0.0001f) return true;
+            if (Vector3.Angle(forward, flat) > watchHalfAngle) continue;
+
+            if (HasClearView(eye, point)) return true;
+        }
+        return false;
+    }
+
+    private bool HasClearView(Vector3 from, Vector3 to)
+    {
+        if (Physics.Linecast(from, to, out RaycastHit hit, ~0, QueryTriggerInteraction.Ignore))
+        {
+            return hit.collider.GetComponentInParent<PlayerController>() != null ||
+                hit.collider.GetComponentInParent<GhostAI>() != null;
+        }
+        return true;
+    }
+
+    private void OnWatchedChanged(bool previous, bool current)
+    {
+        for (int i = 0; i < renderers.Length; i++)
+            renderers[i].material.color = current ? stoneColor : baseColors[i];
     }
 }
