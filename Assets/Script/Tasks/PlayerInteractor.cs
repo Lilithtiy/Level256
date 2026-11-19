@@ -102,7 +102,7 @@ public class PlayerInteractor : NetworkBehaviour
         }
 
         host.HideHold();
-        string prompt = target.Prompt;
+        string prompt = target.PromptAt(targetPoint);
         if (target.Workers.Value > 0) prompt += $"   ({target.Workers.Value} working)";
         host.ShowPrompt(prompt);
 
