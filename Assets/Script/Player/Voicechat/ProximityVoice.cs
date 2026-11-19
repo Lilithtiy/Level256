@@ -27,7 +27,13 @@ public class ProximityVoice : MonoBehaviour
 
             await VivoxService.Instance.InitializeAsync();
             if (!VivoxService.Instance.IsLoggedIn)
-                await VivoxService.Instance.LoginAsync(new LoginOptions());
+            {
+                var options = new LoginOptions
+                {
+                    ParticipantUpdateFrequency = ParticipantPropertyUpdateFrequency.TenPerSecond
+                };
+                await VivoxService.Instance.LoginAsync(options);
+            }
 
             loggedIn = true;
         }
