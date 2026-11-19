@@ -84,6 +84,7 @@ GameObject:
   - component: {fileID: 2112864398096366050}
   - component: {fileID: -7484555799425104625}
   - component: {fileID: 1540481351236536134}
+  - component: {fileID: 829113362855813480}
   m_Layer: 0
   m_Name: Player 1.0
   m_TagString: Player
@@ -427,6 +428,26 @@ MonoBehaviour:
   minBlinkGap: 2
   maxBlinkGap: 6
   surprisedSeconds: 1.5
+--- !u!114 &829113362855813480
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5990630632534819751}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a2d5cede225f7754faeeff27a018ac09, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::VoiceMouth
+  ShowTopMostFoldoutHeaderGroup: 1
+  mouth: {fileID: 8920757658217563016}
+  openScale: {x: 0.85, y: 1, z: 5}
+  gain: 1
+  minOpenWhileSpeaking: 0.25
+  openSpeed: 25
+  closeSpeed: 10
+  debugLog: 0
 --- !u!1 &6997019822837675872
 GameObject:
   m_ObjectHideFlags: 0
@@ -632,5 +653,10 @@ PrefabInstance:
 --- !u!4 &2413930990461430688 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4743722307774280114, guid: 234abf5dfdedd4941b5c7b57baf59fac, type: 3}
+  m_PrefabInstance: {fileID: 6941479947214641682}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &8920757658217563016 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 1988887820724246938, guid: 234abf5dfdedd4941b5c7b57baf59fac, type: 3}
   m_PrefabInstance: {fileID: 6941479947214641682}
   m_PrefabAsset: {fileID: 0}
