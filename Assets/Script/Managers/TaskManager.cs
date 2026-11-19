@@ -83,7 +83,7 @@ public class TaskManager : NetworkBehaviour
         if (!IsServer) return;
 
         Completed.Value++;
-        AudioManager.audioManagerInstance.PlayLocal(taskCompletedAudio);
+        NetworkAudioManager.Instance.PlayNetworked3D(taskCompletedAudio, task.transform.position);
         Debug.Log($"Task done: {task.TaskName} ({Completed.Value}/{Total.Value})");
 
         if (Completed.Value >= Total.Value)

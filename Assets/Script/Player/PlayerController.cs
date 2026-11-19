@@ -2,6 +2,7 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using System.Collections;
+using Unity.Netcode.Components;
 
 [RequireComponent(typeof(CharacterController))]
 public class PlayerController : NetworkBehaviour
@@ -19,6 +20,17 @@ public class PlayerController : NetworkBehaviour
     [SerializeField] private float crouchSpeed = 1.5f;
     [SerializeField] private float jumpHeight = 1.2f;
     [SerializeField] private float gravity = -20f;
+
+    [Header("Footsteps")]
+    [SerializeField] private ScriptableAudio footstepAudio;
+
+    [SerializeField] private float walkStepInterval = 0.55f;
+    [SerializeField] private float runStepInterval = 0.35f;
+    [SerializeField] private float crouchStepInterval = 0.8f;
+
+    [SerializeField] private float movementThreshold = 0.1f;
+
+    private float nextFootstepTime;
 
     [Header("Crouch")]
     [SerializeField] private Transform visual;
@@ -63,6 +75,23 @@ public class PlayerController : NetworkBehaviour
     private float feetY;
 
     public bool IsCrouching => isCrouching.Value;
+
+    public void TeleportTo(Vector3 position, float yaw)
+    {
+        if (!IsOwner) return;
+
+        Quaternion rotation = Quaternion.Euler(0f, yaw, 0f);
+
+        controller.enabled = false;
+
+        if (TryGetComponent(out NetworkTransform networkTransform))
+            networkTransform.Teleport(position, rotation, transform.localScale);
+        else
+            transform.SetPositionAndRotation(position, rotation);
+
+        controller.enabled = true;
+        verticalVelocity = 0f;
+    }
 
     private void Awake()
     {
@@ -158,6 +187,11 @@ public class PlayerController : NetworkBehaviour
 
         controller.Move(move * Time.deltaTime);
 
+        // Check actual horizontal movement after the CharacterController has moved.
+        Vector3 actualMovement = new Vector3(move.x, 0f, move.z);
+
+        HandleFootsteps(controller.isGrounded, actualMovement, speed);
+
         if (Cursor.lockState == CursorLockMode.Locked)
         {
             lookInput = lookAction.action.ReadValue<Vector2>();
@@ -237,7 +271,7 @@ public class PlayerController : NetworkBehaviour
         isCaught = true;
 
         if (catchClip != null)
-            AudioManager.audioManagerInstance.PlayAt(catchClip, cameraTransform.position);
+            NetworkAudioManager.Instance.PlayNetworked2D(catchClip);
 
         // Work out where to look, so the body yaw and camera pitch
         Vector3 flat = ghostPos - transform.position;
@@ -305,5 +339,23 @@ public class PlayerController : NetworkBehaviour
         bool playing = GameManager.Instance == null ||
                     GameManager.Instance.State.Value == GameState.Playing;
         SetCursorLocked(!locked && playing);
+    }
+
+    private void HandleFootsteps(bool grounded, Vector3 movement, float speed)
+    {
+        // No footsteps while airborne or standing still.
+        if (!grounded || movement.sqrMagnitude < movementThreshold * movementThreshold)
+            return;
+
+        // Determine the interval based on the current movement speed.
+        float stepInterval = IsCrouching ? crouchStepInterval : speed == runSpeed ? runStepInterval : walkStepInterval;
+
+        // Only play a footstep when the timer has elapsed.
+        if (Time.time >= nextFootstepTime)
+        {
+            NetworkAudioManager.Instance.PlayNetworked3D(footstepAudio, transform.position);
+
+            nextFootstepTime = Time.time + stepInterval;
+        }
     }
 }

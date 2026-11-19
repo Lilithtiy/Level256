@@ -25,15 +25,8 @@ public class GhostAI : NetworkBehaviour
     [SerializeField] private float shyHuntRange = 80f;
     [Tooltip("Height above the ghost's pivot that a player needs a clear view of")]
     [SerializeField] private float watchPointHeight = 0.9f;
-    [SerializeField] private Color stoneColor = new Color(0.45f, 0.45f, 0.45f);
 
-    private readonly NetworkVariable<bool> isWatched = new(
-        false,
-        NetworkVariableReadPermission.Everyone,
-        NetworkVariableWritePermission.Server);
-
-    private Renderer[] renderers;
-    private Color[] baseColors;
+    private readonly NetworkVariable<bool> isWatched = new(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
     [Header("Senses")]
     [SerializeField] private float detectRange = 15f;
@@ -47,8 +40,6 @@ public class GhostAI : NetworkBehaviour
     [SerializeField] private float speed = 3.5f;
     [SerializeField] private float wanderRadius = 12f;
     [SerializeField] private float repathInterval = 0.25f;
-    [SerializeField] private ScriptableAudio ghostProximityAudio;
-    private AudioSource ghostProximityAudioSource;
 
     [Header("Catching")]
     [SerializeField] private float catchDistance = 1.8f;
@@ -74,18 +65,10 @@ public class GhostAI : NetworkBehaviour
     private void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
-
-        renderers = GetComponentsInChildren<Renderer>();
-        baseColors = new Color[renderers.Length];
-        for (int i = 0; i < renderers.Length; i++)
-            baseColors[i] = renderers[i].material.color;
     }
 
     public override void OnNetworkSpawn()
     {
-        if (personality == GhostPersonality.Shy)
-            isWatched.OnValueChanged += OnWatchedChanged;
-
         if (!IsServer)
         {
             agent.enabled = false;
@@ -94,21 +77,14 @@ public class GhostAI : NetworkBehaviour
         }
 
         agent.speed = speed;
-        if (personality == GhostPersonality.Shy) agent.acceleration = 60f;   // stops and starts instantly
+        if (personality == GhostPersonality.Shy) agent.acceleration = 60f;
         homePosition = transform.position;
         allGhosts.Add(this);
     }
 
     public override void OnNetworkDespawn()
     {
-        if (IsServer)
-        {
-           isWatched.OnValueChanged -= OnWatchedChanged;
-           if (IsServer) allGhosts.Remove(this);
-
-            AudioManager.audioManagerInstance.StopAttached(ghostProximityAudioSource);
-            ghostProximityAudioSource = null;
-        }
+        if (IsServer) allGhosts.Remove(this);
     }
 
     public void SetRespawnPrefab(GameObject prefab)
@@ -206,7 +182,7 @@ public class GhostAI : NetworkBehaviour
     {
         if (!NetworkObject.IsSpawned) return;
 
-        AudioManager.audioManagerInstance.PlayAt(ghostDeathAudio, transform.position);
+        NetworkAudioManager.Instance.PlayNetworked3D(ghostDeathAudio, transform.position);
         GhostSpawner.Instance.RespawnGhost(ghostPrefab, ghostRespawnDelay);
         NetworkObject.Despawn(true);
     }
@@ -351,7 +327,6 @@ public class GhostAI : NetworkBehaviour
     }
 
     // Restart
-
     public static void ResetAll()
     {
         foreach (var ghost in allGhosts) ghost.ResetGhost();
@@ -437,9 +412,4 @@ public class GhostAI : NetworkBehaviour
         return true;
     }
 
-    private void OnWatchedChanged(bool previous, bool current)
-    {
-        for (int i = 0; i < renderers.Length; i++)
-            renderers[i].material.color = current ? stoneColor : baseColors[i];
-    }
 }

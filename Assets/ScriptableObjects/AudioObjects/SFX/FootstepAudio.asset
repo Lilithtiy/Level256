@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e20d6be7860d4d4c86090b5af2e60b0, type: 3}
+  m_Name: FootstepAudio
+  m_EditorClassIdentifier: Assembly-CSharp::ScriptableAudio
+  audioClips:
+  - {fileID: 8300000, guid: 813eb51db67b3c44ba9eecc5c0f8d3cc, type: 3}
+  - {fileID: 8300000, guid: d67982bdc877b37468d87740eb8af0ad, type: 3}
+  - {fileID: 8300000, guid: b2acb503d29679a43bbb1673ca121912, type: 3}
+  - {fileID: 8300000, guid: 84e357d9ab1636040bd72dab8b226eba, type: 3}
+  - {fileID: 8300000, guid: f749e5373cb4cce4bbf9edc15d299d12, type: 3}
+  - {fileID: 8300000, guid: 73be17be3c862604285bc472b900c202, type: 3}
+  volume: 0.7
+  pitch: 1
+  randomPitch: 1
+  spatialBlend: 1
+  minDistance: 1
+  maxDistance: 20
+  looping: 0
+  mixerGroup: {fileID: -7356876165004910904, guid: ff0432945f02ee44997548c1440a2e74, type: 2}

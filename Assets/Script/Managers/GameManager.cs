@@ -142,6 +142,7 @@ public class GameManager : NetworkBehaviour
             var sub = new GUIStyle(GUI.skin.label) { fontSize = 24, alignment = TextAnchor.MiddleCenter };
             GUI.Label(new Rect(0, Screen.height * 0.5f, Screen.width, 40), "Waiting for the host...", sub);
         }
+        AudioManager.audioManagerInstance?.PlayMusic(AudioManager.MusicState.Lobby);
     }
 
     public void ActivateGhostExposedState()

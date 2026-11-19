@@ -32,6 +32,7 @@ public class SessionUI : MonoBehaviour
     {
         playerName = PlayerName.Load();
         NetworkManager.Singleton.OnClientStopped += OnNetworkStopped;
+        AudioManager.audioManagerInstance?.PlayMusic(AudioManager.MusicState.MainMenu);
     }
 
     private void OnDestroy()
@@ -44,6 +45,7 @@ public class SessionUI : MonoBehaviour
     {
         if (session == null) return;
         LeaveSession(wasHost ? "" : "The host left the session.");
+        AudioManager.audioManagerInstance?.PlayMusic(AudioManager.MusicState.MainMenu);
     }
 
     // Session logic
@@ -68,6 +70,7 @@ public class SessionUI : MonoBehaviour
             JoinCode = session.Code;
             status = "Loading lobby...";
             GameFlow.Instance.OpenLobby();
+            AudioManager.audioManagerInstance?.PlayMusic(AudioManager.MusicState.Lobby);
 
             GetComponent<ProximityVoice>().StartVoice(session.Code);
             status = $"Hosting. Join code: {session.Code}";
@@ -100,6 +103,7 @@ public class SessionUI : MonoBehaviour
 
             GetComponent<ProximityVoice>().StartVoice(session.Code);
             status = "Joined session";
+            AudioManager.audioManagerInstance?.PlayMusic(AudioManager.MusicState.Lobby);
         }
         catch (System.Exception e)
         {
@@ -142,6 +146,7 @@ public class SessionUI : MonoBehaviour
         Cursor.lockState = CursorLockMode.None; Cursor.visible = true;
         if (SceneManager.GetActiveScene().name != bootSceneName)
             SceneManager.LoadScene(bootSceneName);
+            AudioManager.audioManagerInstance?.PlayMusic(AudioManager.MusicState.MainMenu);
     }
 
     // UI

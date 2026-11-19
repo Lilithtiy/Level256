@@ -19,7 +19,7 @@ public class OnPowerDotCollision : NetworkBehaviour
                 collisionHandler.HandlePowerDotCollision(scoreValue, NetworkObject);
 
                 // Play the power dot collision audio
-                AudioManager.audioManagerInstance.PlayLocal(powerDotCollisionAudio);
+                NetworkAudioManager.Instance.PlayNetworked2D(powerDotCollisionAudio);
             }
         }
     }
