@@ -34,6 +34,7 @@ public class LobbyManager : NetworkBehaviour
     public static LobbyManager Instance { get; private set; }
 
     [SerializeField] private ScriptableAudio menuSelectAudio;
+    [SerializeField] private ScriptableAudio typingAudio;
 
     private static readonly Color[] PlayerColors =
     {
@@ -299,8 +300,8 @@ public class LobbyManager : NetworkBehaviour
         copyBtn = root.Q<Button>("copy-btn");
         startBtn = root.Q<Button>("start-btn");
 
-        colorBtn.clicked += () => ChangeColorRpc(); AudioManager.audioManagerInstance.PlayLocal(menuSelectAudio);
-        nameBtn.clicked += () => OpenInput(InputMode.Name); AudioManager.audioManagerInstance.PlayLocal(menuSelectAudio);
+        colorBtn.clicked += () => ChangeColorRpc(); 
+        nameBtn.clicked += () => OpenInput(InputMode.Name);
         muteBtn.clicked += () => 
         {
             var v = Voice;
@@ -327,6 +328,17 @@ public class LobbyManager : NetworkBehaviour
         {
             if (inputFocused && mode != InputMode.None) CloseInput(false);
             inputFocused = false;
+        });
+
+        // Play typing sound when text is added
+        inputField.RegisterValueChangedCallback(changeEvent =>
+        {
+            if (!inputFocused) return;
+
+            if (changeEvent.newValue.Length > changeEvent.previousValue.Length)
+            {
+                AudioManager.audioManagerInstance.PlayLocal(typingAudio);
+            }
         });
 
         root.style.display = IsSpawned ? DisplayStyle.Flex : DisplayStyle.None;

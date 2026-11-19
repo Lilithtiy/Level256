@@ -354,6 +354,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::LobbyManager
   ShowTopMostFoldoutHeaderGroup: 1
   menuSelectAudio: {fileID: 11400000, guid: 0da46f9edccfb1747b8134c3af509352, type: 2}
+  typingAudio: {fileID: 11400000, guid: ced206797d7d3ae42bb00ab10c8da6d7, type: 2}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
