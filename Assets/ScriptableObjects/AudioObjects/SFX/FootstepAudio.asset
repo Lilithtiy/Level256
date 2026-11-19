@@ -19,11 +19,11 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 84e357d9ab1636040bd72dab8b226eba, type: 3}
   - {fileID: 8300000, guid: f749e5373cb4cce4bbf9edc15d299d12, type: 3}
   - {fileID: 8300000, guid: 73be17be3c862604285bc472b900c202, type: 3}
-  volume: 1
+  volume: 0.7
   pitch: 1
   randomPitch: 1
   spatialBlend: 1
   minDistance: 1
   maxDistance: 20
   looping: 0
-  mixerGroup: {fileID: -2685829756001165608, guid: ff0432945f02ee44997548c1440a2e74, type: 2}
+  mixerGroup: {fileID: -7356876165004910904, guid: ff0432945f02ee44997548c1440a2e74, type: 2}

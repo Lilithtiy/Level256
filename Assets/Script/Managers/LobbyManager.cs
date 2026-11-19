@@ -35,6 +35,7 @@ public class LobbyManager : NetworkBehaviour
 
     [SerializeField] private ScriptableAudio menuSelectAudio;
     [SerializeField] private ScriptableAudio typingAudio;
+    [SerializeField] private ScriptableAudio sendMessageAudio;
 
     private static readonly Color[] PlayerColors =
     {
@@ -313,6 +314,7 @@ public class LobbyManager : NetworkBehaviour
             var ui = FindFirstObjectByType<SessionUI>();
             if (ui != null) ui.LeaveSession();
             AudioManager.audioManagerInstance.PlayLocal(menuSelectAudio);
+            AudioManager.audioManagerInstance.PlayMusic(AudioManager.MusicState.MainMenu);
         };
         copyBtn.clicked += () =>
         {
@@ -351,7 +353,7 @@ public class LobbyManager : NetworkBehaviour
 
         if (IsServer)
         {
-            if (AllClientsReady()) GameFlow.Instance.StartGame();
+            if (AllClientsReady()) GameFlow.Instance.StartGame(); AudioManager.audioManagerInstance.PlayMusic(AudioManager.MusicState.Ambient);
         }
         else
         {
@@ -514,6 +516,7 @@ public class LobbyManager : NetworkBehaviour
         else if (kb.enterKey.wasPressedThisFrame || kb.numpadEnterKey.wasPressedThisFrame)
         {
             SubmitInput();
+            AudioManager.audioManagerInstance.PlayLocal(sendMessageAudio);
         }
     }
 

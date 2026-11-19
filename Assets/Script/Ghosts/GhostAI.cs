@@ -28,8 +28,6 @@ public class GhostAI : NetworkBehaviour
     [SerializeField] private float speed = 3.5f;
     [SerializeField] private float wanderRadius = 12f;
     [SerializeField] private float repathInterval = 0.25f;
-    [SerializeField] private ScriptableAudio ghostProximityAudio;
-    private AudioSource ghostProximityAudioSource;
 
     [Header("Catching")]
     [SerializeField] private float catchDistance = 1.8f;
@@ -59,7 +57,6 @@ public class GhostAI : NetworkBehaviour
 
     public override void OnNetworkSpawn()
     {
-        ghostProximityAudioSource = AudioManager.audioManagerInstance.PlayAttached(ghostProximityAudio, gameObject.transform);
 
         if (!IsServer)
         {
@@ -79,8 +76,6 @@ public class GhostAI : NetworkBehaviour
         {
             allGhosts.Remove(this);
 
-            AudioManager.audioManagerInstance.StopAttached(ghostProximityAudioSource);
-            ghostProximityAudioSource = null;
         }
     }
 

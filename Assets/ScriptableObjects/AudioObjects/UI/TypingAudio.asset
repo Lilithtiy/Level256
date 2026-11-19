@@ -10,15 +10,19 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4e20d6be7860d4d4c86090b5af2e60b0, type: 3}
-  m_Name: MenuSelectAudio
+  m_Name: TypingAudio
   m_EditorClassIdentifier: Assembly-CSharp::ScriptableAudio
   audioClips:
-  - {fileID: 8300000, guid: ccf1b71280ca47743a8a32329d9517bd, type: 3}
-  volume: 1
+  - {fileID: 8300000, guid: f45710742c7d83d4e9d02791da8821cf, type: 3}
+  - {fileID: 8300000, guid: 2f020a392349ff2478107b9c11050acb, type: 3}
+  - {fileID: 8300000, guid: 0caf83f602228b542a0fea999a41bce0, type: 3}
+  - {fileID: 8300000, guid: a9bff9e717cec514b8ac6f6183de6013, type: 3}
+  - {fileID: 8300000, guid: 16de18e517a98024a8fb26863982bb6e, type: 3}
+  volume: 0.7
   pitch: 1
   randomPitch: 1
   spatialBlend: 0
   minDistance: 1
   maxDistance: 15
   looping: 0
-  mixerGroup: {fileID: -8536752136948069027, guid: ff0432945f02ee44997548c1440a2e74, type: 2}
+  mixerGroup: {fileID: 4304575185080309995, guid: ff0432945f02ee44997548c1440a2e74, type: 2}

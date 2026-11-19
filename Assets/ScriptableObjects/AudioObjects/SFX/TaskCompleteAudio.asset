@@ -14,11 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ScriptableAudio
   audioClips:
   - {fileID: 8300000, guid: 93431d99c216a774f9454648c049f484, type: 3}
-  volume: 1
+  volume: 0.7
   pitch: 1
   randomPitch: 0
   spatialBlend: 1
   minDistance: 3
   maxDistance: 15
   looping: 0
-  mixerGroup: {fileID: -2685829756001165608, guid: ff0432945f02ee44997548c1440a2e74, type: 2}
+  mixerGroup: {fileID: -7721283456527281482, guid: ff0432945f02ee44997548c1440a2e74, type: 2}
