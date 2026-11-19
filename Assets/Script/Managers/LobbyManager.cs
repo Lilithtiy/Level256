@@ -33,13 +33,14 @@ public class LobbyManager : NetworkBehaviour
 {
     public static LobbyManager Instance { get; private set; }
 
-    private static readonly Color[] PlayerColors =
+    public static readonly Color[] PlayerColors =
     {
         new Color(0.20f, 0.90f, 0.20f), new Color(0.30f, 0.30f, 1.00f),
         new Color(1.00f, 0.25f, 0.25f), new Color(1.00f, 0.85f, 0.10f),
         new Color(0.80f, 0.30f, 0.90f), new Color(0.20f, 0.85f, 0.90f),
         new Color(1.00f, 0.55f, 0.10f), new Color(1.00f, 0.41f, 0.71f)
     };
+    public static readonly Dictionary<ulong, (string name, byte color)> Profiles = new();
 
     private static readonly Color PingGood = new Color(0.5f, 1f, 0.4f);
     private static readonly Color PingOk = new Color(1f, 0.85f, 0.2f);
@@ -250,6 +251,13 @@ public class LobbyManager : NetworkBehaviour
         return true;
     }
 
+    private void SnapshotProfiles()
+    {
+        Profiles.Clear();
+        for (int i = 0; i < players.Count; i++)
+            Profiles[players[i].clientId] = (PlainName(i), players[i].color);
+    }
+
     // Helpers
     private static string Clean(string s) => s.Replace("<", "‹");
 
@@ -332,7 +340,11 @@ public class LobbyManager : NetworkBehaviour
     {
         if (IsServer)
         {
-            if (AllClientsReady()) GameFlow.Instance.StartGame();
+            if (AllClientsReady())
+            {
+                SnapshotProfiles();
+                GameFlow.Instance.StartGame();
+            }
         }
         else
         {
