@@ -33,6 +33,10 @@ public class LobbyManager : NetworkBehaviour
 {
     public static LobbyManager Instance { get; private set; }
 
+    [SerializeField] private ScriptableAudio menuSelectAudio;
+    [SerializeField] private ScriptableAudio typingAudio;
+    [SerializeField] private ScriptableAudio sendMessageAudio;
+
     public static readonly Color[] PlayerColors =
     {
         new Color(0.20f, 0.90f, 0.20f), new Color(0.30f, 0.30f, 1.00f),
@@ -305,22 +309,26 @@ public class LobbyManager : NetworkBehaviour
         copyBtn = root.Q<Button>("copy-btn");
         startBtn = root.Q<Button>("start-btn");
 
-        colorBtn.clicked += () => ChangeColorRpc();
+        colorBtn.clicked += () => ChangeColorRpc(); 
         nameBtn.clicked += () => OpenInput(InputMode.Name);
-        muteBtn.clicked += () =>
+        muteBtn.clicked += () => 
         {
             var v = Voice;
             if (v != null) v.SetMuted(!v.IsMuted);
+            AudioManager.audioManagerInstance.PlayLocal(menuSelectAudio);
         };
         leaveBtn.clicked += () =>
         {
             var ui = FindFirstObjectByType<SessionUI>();
             if (ui != null) ui.LeaveSession();
+            AudioManager.audioManagerInstance.PlayLocal(menuSelectAudio);
+            AudioManager.audioManagerInstance.PlayMusic(AudioManager.MusicState.MainMenu);
         };
         copyBtn.clicked += () =>
         {
             GUIUtility.systemCopyBuffer = SessionUI.JoinCode;
             copiedUntil = Time.time + 2f;
+            AudioManager.audioManagerInstance.PlayLocal(menuSelectAudio);
         };
         startBtn.clicked += OnStartClicked;
 
@@ -332,12 +340,25 @@ public class LobbyManager : NetworkBehaviour
             inputFocused = false;
         });
 
+        // Play typing sound when text is added
+        inputField.RegisterValueChangedCallback(changeEvent =>
+        {
+            if (!inputFocused) return;
+
+            if (changeEvent.newValue.Length > changeEvent.previousValue.Length)
+            {
+                AudioManager.audioManagerInstance.PlayLocal(typingAudio);
+            }
+        });
+
         root.style.display = IsSpawned ? DisplayStyle.Flex : DisplayStyle.None;
         return true;
     }
 
     private void OnStartClicked()
     {
+        AudioManager.audioManagerInstance.PlayLocal(menuSelectAudio);
+
         if (IsServer)
         {
             if (AllClientsReady())
@@ -507,6 +528,7 @@ public class LobbyManager : NetworkBehaviour
         else if (kb.enterKey.wasPressedThisFrame || kb.numpadEnterKey.wasPressedThisFrame)
         {
             SubmitInput();
+            AudioManager.audioManagerInstance.PlayLocal(sendMessageAudio);
         }
     }
 
