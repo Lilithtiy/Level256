@@ -226,7 +226,7 @@ MonoBehaviour:
   crouchHeight: 0.7
   standEyeHeight: 0.6
   crouchEyeHeight: 0.7
-  mouseSensitivity: 0.7
+  mouseSensitivity: 0.18
   turnSeconds: 0.25
   holdSeconds: 1
   fadeSeconds: 0.6
@@ -383,8 +383,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: '::'
   ShowTopMostFoldoutHeaderGroup: 1
-  maxThreatDistance: 25
-  minThreatDistance: 3
+  maxThreatDistance: 10
+  minThreatDistance: 1
   detectionInterval: 0.25
 --- !u!114 &8674779202276131015
 MonoBehaviour:
