@@ -85,7 +85,7 @@ public class RoleHud : MonoBehaviour
         RoleType.Locater => "You can see where the ghosts are.",
         RoleType.TeamLeader => "You can see where all the players are.",
         RoleType.Worker => "You can see where the tasks are.",
-        _ => "You can see where the pellets are."
+        _ => "You can see where the energy pellets are."
     };
 
     private static Color GetColor(MarkerType type) => type switch

@@ -30,7 +30,7 @@ public class ScriptableAudio : ScriptableObject
 
     public AudioClip GetRandomClip()
     {
-        if (audioClips.Length == 0 || audioClips == null) {return null;}
+        if (audioClips == null || audioClips.Length == 0) { return null;}
 
         int randomIndex = Random.Range(0, audioClips.Length);
         return audioClips[randomIndex];

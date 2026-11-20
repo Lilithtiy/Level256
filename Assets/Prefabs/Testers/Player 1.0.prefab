@@ -216,12 +216,17 @@ MonoBehaviour:
   crouchSpeed: 1.5
   jumpHeight: 1.2
   gravity: -20
+  footstepAudio: {fileID: 11400000, guid: 0f83ba6fe974e8b419edbf163999d6f0, type: 2}
+  walkStepInterval: 0.55
+  runStepInterval: 0.35
+  crouchStepInterval: 0.8
+  movementThreshold: 0.1
   visual: {fileID: 1605805642952814212}
   standHeight: 1.8
   crouchHeight: 0.7
   standEyeHeight: 0.6
   crouchEyeHeight: 0.7
-  mouseSensitivity: 1
+  mouseSensitivity: 0.7
   turnSeconds: 0.25
   holdSeconds: 1
   fadeSeconds: 0.6
@@ -374,17 +379,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 5990630632534819751}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a2d5cede225f7754faeeff27a018ac09, type: 3}
+  m_Script: {fileID: 11500000, guid: 9663778286263a845a395ec2cdfe12a3, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::VoiceMouth
+  m_EditorClassIdentifier: '::'
   ShowTopMostFoldoutHeaderGroup: 1
-  mouth: {fileID: 8920757658217563016}
-  openScale: {x: 0.85, y: 1, z: 5}
-  gain: 1
-  minOpenWhileSpeaking: 0.25
-  openSpeed: 25
-  closeSpeed: 10
-  debugLog: 0
+  maxThreatDistance: 25
+  minThreatDistance: 3
+  detectionInterval: 0.25
 --- !u!114 &8674779202276131015
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -706,10 +707,5 @@ PrefabInstance:
 --- !u!4 &2413930990461430688 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4743722307774280114, guid: 234abf5dfdedd4941b5c7b57baf59fac, type: 3}
-  m_PrefabInstance: {fileID: 6941479947214641682}
-  m_PrefabAsset: {fileID: 0}
---- !u!4 &8920757658217563016 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 1988887820724246938, guid: 234abf5dfdedd4941b5c7b57baf59fac, type: 3}
   m_PrefabInstance: {fileID: 6941479947214641682}
   m_PrefabAsset: {fileID: 0}

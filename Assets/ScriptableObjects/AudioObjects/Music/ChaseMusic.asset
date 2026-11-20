@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e20d6be7860d4d4c86090b5af2e60b0, type: 3}
+  m_Name: ChaseMusic
+  m_EditorClassIdentifier: Assembly-CSharp::ScriptableAudio
+  audioClips:
+  - {fileID: 8300000, guid: 4d2c1906b4e7b494c85ce0f479ca8a8e, type: 3}
+  volume: 0.8
+  pitch: 1
+  randomPitch: 0
+  spatialBlend: 0
+  minDistance: 1
+  maxDistance: 15
+  looping: 1
+  mixerGroup: {fileID: -4349346888150229290, guid: ff0432945f02ee44997548c1440a2e74, type: 2}
