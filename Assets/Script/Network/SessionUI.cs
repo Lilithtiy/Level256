@@ -17,6 +17,7 @@ public class SessionUI : MonoBehaviour
 
     [Header("Scenes")]
     [SerializeField] private string bootSceneName = "Bootstrap";
+    [SerializeField] private string tutorialSceneName = "Tutorial";
 
     private static readonly Color Yellow = new Color(1f, 0.92f, 0.016f, 1f);
 
@@ -209,6 +210,10 @@ public class SessionUI : MonoBehaviour
 
     private void OnGUI()
     {
+        // Only display this UI in Bootstrap
+        if (SceneManager.GetActiveScene().name == tutorialSceneName)
+            return;
+
         if (session != null || SettingsMenu.IsOpen || CreditsMenu.IsOpen) return;
 
         BuildStyles();
@@ -280,6 +285,16 @@ public class SessionUI : MonoBehaviour
         GUI.enabled = true;
 
         y += 80 * s;
+
+        Fill(new Rect(x, y + 10 * s, w * 0.4f, 2 * s), new Color(1f, 1f, 1f, 0.15f));
+        Fill(new Rect(x + w * 0.6f, y + 10 * s, w * 0.4f, 2 * s), new Color(1f, 1f, 1f, 0.15f));
+        GUI.Label(new Rect(x, y - 6 * s, w, 34 * s), "OR", tagStyle);
+        y += 50 * s;
+
+        if (Btn(new Rect(x, y, w, 80 * s), "TUTORIAL", btnBig)) GameFlow.Instance.StartTutorial();
+
+        y += 100 * s;
+
         if (Btn(new Rect(x, y, w, 56 * s), "SETTINGS", btnSmall))
             SettingsMenu.Instance?.Open();
         

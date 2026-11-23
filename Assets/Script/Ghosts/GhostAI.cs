@@ -28,6 +28,8 @@ public class GhostAI : NetworkBehaviour
 
     private readonly NetworkVariable<bool> isWatched = new(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
+    [SerializeField] private bool isTutorial = false;
+
     [Header("Senses")]
     [SerializeField] private float detectRange = 15f;
     [SerializeField] private float eyeHeight = 1.5f;
@@ -80,6 +82,11 @@ public class GhostAI : NetworkBehaviour
         if (personality == GhostPersonality.Shy) agent.acceleration = 60f;
         homePosition = transform.position;
         allGhosts.Add(this);
+
+        if(isTutorial)
+        {
+            GameManager.Instance.ghostState.Value = GhostState.Exposed;
+        }
     }
 
     public override void OnNetworkDespawn()
@@ -105,7 +112,7 @@ public class GhostAI : NetworkBehaviour
         }
 
         // Normal state
-        if (gm.ghostState.Value == GhostState.Normal)
+        if (gm.ghostState.Value == GhostState.Normal && !isTutorial)
         {
             if (personality == GhostPersonality.Shy)
             {
@@ -159,7 +166,7 @@ public class GhostAI : NetworkBehaviour
             }
         }
         // Exposed state
-        else
+        else if (gm.ghostState.Value == GhostState.Exposed && !isTutorial)
         {
             if (agent.isStopped) agent.isStopped = false;
 
@@ -176,6 +183,16 @@ public class GhostAI : NetworkBehaviour
 
             if (nearest != null) FleeFromPlayer(nearest.position);
         }
+        else if (isTutorial)
+        {
+            Transform nearest = FindNearestPlayer(out float d, out _);
+
+            if (nearest != null && d <= catchDistance)
+            {
+                EatGhost();
+                return;
+            }
+        }
     }
 
     private void EatGhost()
@@ -183,8 +200,11 @@ public class GhostAI : NetworkBehaviour
         if (!NetworkObject.IsSpawned) return;
 
         NetworkAudioManager.Instance.PlayNetworked3D(ghostDeathAudio, transform.position);
-        GhostSpawner.Instance.RespawnGhost(ghostPrefab, ghostRespawnDelay);
-        NetworkObject.Despawn(true);
+        if (!isTutorial)
+        {
+            GhostSpawner.Instance.RespawnGhost(ghostPrefab, ghostRespawnDelay);
+        }
+        Destroy(gameObject);
     }
 
     // Fleeing
