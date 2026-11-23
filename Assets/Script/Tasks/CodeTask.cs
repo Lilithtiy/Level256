@@ -20,7 +20,8 @@ public abstract class CodeTask : StationTask
         if (ok) FinishNow();
         else EmitAlarm(wrongNoiseRadius, wrongNoiseSeconds);
 
-        CodeResultRpc(ok);
+        CodeResultRpc(ok); // tells the panel whether the answer was correct
+
     }
 
     [Rpc(SendTo.Everyone)]
