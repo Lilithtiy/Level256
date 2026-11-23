@@ -289,6 +289,7 @@ public class LobbyManager : NetworkBehaviour
         var doc = GetComponent<UIDocument>();
         if (doc == null || doc.rootVisualElement == null) return false;
 
+
         var r = doc.rootVisualElement.Q("lobby-root");
         if (r == null) return false;
         root = r;
@@ -350,6 +351,9 @@ public class LobbyManager : NetworkBehaviour
                 AudioManager.audioManagerInstance.PlayLocal(typingAudio);
             }
         });
+
+        var settingsBtn = root.Q<Button>("settings-btn");
+        if (settingsBtn != null) settingsBtn.clicked += () => SettingsMenu.Instance?.Open();
 
         root.style.display = IsSpawned ? DisplayStyle.Flex : DisplayStyle.None;
         return true;
@@ -514,6 +518,8 @@ public class LobbyManager : NetworkBehaviour
 
     private void HandleKeys()
     {
+        if (SettingsMenu.IsOpen) return;
+
         var kb = Keyboard.current;
         if (kb == null) return;
 

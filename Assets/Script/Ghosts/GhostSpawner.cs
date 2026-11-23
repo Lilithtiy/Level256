@@ -12,7 +12,7 @@ public class GhostSpawner : MonoBehaviour
     {
         public GameObject prefab;
         public Transform point;
-        [Range(0f, 1f)] public float spawnAtProgress = 0f;   // 0.10 = spawns at 10% progress
+        [Range(0f, 1f)] public float spawnAtProgress = 0f; // 0.10 = spawns at 10% progress
     }
 
     [SerializeField] private GhostSpawn[] ghosts;

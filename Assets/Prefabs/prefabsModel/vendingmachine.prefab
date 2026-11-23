@@ -1,0 +1,217 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &1297515478112285526
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: -8867477870038081954, guid: e95ac18aa3fec464492c987e1b60c4bd, type: 3}
+      propertyPath: 'm_Materials.Array.data[1]'
+      value: 
+      objectReference: {fileID: 2100000, guid: ded443b813b8dfd4fa048d50c992f9d1, type: 2}
+    - target: {fileID: -8679921383154817045, guid: e95ac18aa3fec464492c987e1b60c4bd, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 66.481155
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: e95ac18aa3fec464492c987e1b60c4bd, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.5525794
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: e95ac18aa3fec464492c987e1b60c4bd, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -42.34732
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: e95ac18aa3fec464492c987e1b60c4bd, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: e95ac18aa3fec464492c987e1b60c4bd, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: e95ac18aa3fec464492c987e1b60c4bd, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: e95ac18aa3fec464492c987e1b60c4bd, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: e95ac18aa3fec464492c987e1b60c4bd, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: e95ac18aa3fec464492c987e1b60c4bd, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: e95ac18aa3fec464492c987e1b60c4bd, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8551654070373378105, guid: e95ac18aa3fec464492c987e1b60c4bd, type: 3}
+      propertyPath: m_Name
+      value: windowsMachine
+      objectReference: {fileID: 0}
+    - target: {fileID: -8551654070373378105, guid: e95ac18aa3fec464492c987e1b60c4bd, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -7515429101286732190, guid: e95ac18aa3fec464492c987e1b60c4bd, type: 3}
+      propertyPath: m_Name
+      value: Drink3
+      objectReference: {fileID: 0}
+    - target: {fileID: -7308718804694308083, guid: e95ac18aa3fec464492c987e1b60c4bd, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 451dced983858aa418eeb22b07c77745, type: 2}
+    - target: {fileID: -7308718804694308083, guid: e95ac18aa3fec464492c987e1b60c4bd, type: 3}
+      propertyPath: 'm_Materials.Array.data[4]'
+      value: 
+      objectReference: {fileID: 2100000, guid: a915d7f0124350146a89a649bccf20a2, type: 2}
+    - target: {fileID: -6673802680727711063, guid: e95ac18aa3fec464492c987e1b60c4bd, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 451dced983858aa418eeb22b07c77745, type: 2}
+    - target: {fileID: -5971410051629635644, guid: e95ac18aa3fec464492c987e1b60c4bd, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 451dced983858aa418eeb22b07c77745, type: 2}
+    - target: {fileID: -5754060345647867467, guid: e95ac18aa3fec464492c987e1b60c4bd, type: 3}
+      propertyPath: m_Name
+      value: Drink5
+      objectReference: {fileID: 0}
+    - target: {fileID: -4906838889796845047, guid: e95ac18aa3fec464492c987e1b60c4bd, type: 3}
+      propertyPath: m_Name
+      value: Vendingbox
+      objectReference: {fileID: 0}
+    - target: {fileID: -3778644264426962316, guid: e95ac18aa3fec464492c987e1b60c4bd, type: 3}
+      propertyPath: m_Name
+      value: Drink1
+      objectReference: {fileID: 0}
+    - target: {fileID: -3540495426589365078, guid: e95ac18aa3fec464492c987e1b60c4bd, type: 3}
+      propertyPath: m_Name
+      value: Drink6
+      objectReference: {fileID: 0}
+    - target: {fileID: -3410185793394415013, guid: e95ac18aa3fec464492c987e1b60c4bd, type: 3}
+      propertyPath: m_Name
+      value: Drink4
+      objectReference: {fileID: 0}
+    - target: {fileID: -3137722172632951806, guid: e95ac18aa3fec464492c987e1b60c4bd, type: 3}
+      propertyPath: m_Name
+      value: vending circle3
+      objectReference: {fileID: 0}
+    - target: {fileID: -2874765826992384646, guid: e95ac18aa3fec464492c987e1b60c4bd, type: 3}
+      propertyPath: m_Name
+      value: "kortl\xE6ser"
+      objectReference: {fileID: 0}
+    - target: {fileID: -2764512629625626004, guid: e95ac18aa3fec464492c987e1b60c4bd, type: 3}
+      propertyPath: m_Name
+      value: Drink2
+      objectReference: {fileID: 0}
+    - target: {fileID: -2519092360280523269, guid: e95ac18aa3fec464492c987e1b60c4bd, type: 3}
+      propertyPath: m_Name
+      value: vencingcircle2
+      objectReference: {fileID: 0}
+    - target: {fileID: -2473424575180118478, guid: e95ac18aa3fec464492c987e1b60c4bd, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 451dced983858aa418eeb22b07c77745, type: 2}
+    - target: {fileID: -2040254050740271484, guid: e95ac18aa3fec464492c987e1b60c4bd, type: 3}
+      propertyPath: m_Name
+      value: Hylde2
+      objectReference: {fileID: 0}
+    - target: {fileID: -1891630423312683343, guid: e95ac18aa3fec464492c987e1b60c4bd, type: 3}
+      propertyPath: m_Name
+      value: coinslot
+      objectReference: {fileID: 0}
+    - target: {fileID: -1558721567721526513, guid: e95ac18aa3fec464492c987e1b60c4bd, type: 3}
+      propertyPath: m_Name
+      value: vendingcircle
+      objectReference: {fileID: 0}
+    - target: {fileID: 466608246689542871, guid: e95ac18aa3fec464492c987e1b60c4bd, type: 3}
+      propertyPath: 'm_Materials.Array.data[1]'
+      value: 
+      objectReference: {fileID: 2100000, guid: eca1ce3f08f3d3c49b38dbb5e2e54e30, type: 2}
+    - target: {fileID: 919132149155446097, guid: e95ac18aa3fec464492c987e1b60c4bd, type: 3}
+      propertyPath: m_Name
+      value: vendingmachine
+      objectReference: {fileID: 0}
+    - target: {fileID: 1835210009659533079, guid: e95ac18aa3fec464492c987e1b60c4bd, type: 3}
+      propertyPath: m_Name
+      value: pressbuttons
+      objectReference: {fileID: 0}
+    - target: {fileID: 2927593092117553206, guid: e95ac18aa3fec464492c987e1b60c4bd, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 1c07f24953bf77e4cb13b9bd064bec9d, type: 2}
+    - target: {fileID: 3455292422214010178, guid: e95ac18aa3fec464492c987e1b60c4bd, type: 3}
+      propertyPath: m_Name
+      value: Drink4
+      objectReference: {fileID: 0}
+    - target: {fileID: 4504409719310791647, guid: e95ac18aa3fec464492c987e1b60c4bd, type: 3}
+      propertyPath: m_Name
+      value: Hylde1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5008022236170083033, guid: e95ac18aa3fec464492c987e1b60c4bd, type: 3}
+      propertyPath: 'm_Materials.Array.data[1]'
+      value: 
+      objectReference: {fileID: 2100000, guid: a915d7f0124350146a89a649bccf20a2, type: 2}
+    - target: {fileID: 6248574976466802116, guid: e95ac18aa3fec464492c987e1b60c4bd, type: 3}
+      propertyPath: m_Name
+      value: vendinghandle
+      objectReference: {fileID: 0}
+    - target: {fileID: 7103153012782714218, guid: e95ac18aa3fec464492c987e1b60c4bd, type: 3}
+      propertyPath: m_Name
+      value: lightvending
+      objectReference: {fileID: 0}
+    - target: {fileID: 8578709097331664583, guid: e95ac18aa3fec464492c987e1b60c4bd, type: 3}
+      propertyPath: m_Name
+      value: coins
+      objectReference: {fileID: 0}
+    - target: {fileID: 9141816029861474070, guid: e95ac18aa3fec464492c987e1b60c4bd, type: 3}
+      propertyPath: m_Name
+      value: Drink5
+      objectReference: {fileID: 0}
+    - target: {fileID: 9217234437682292332, guid: e95ac18aa3fec464492c987e1b60c4bd, type: 3}
+      propertyPath: m_Name
+      value: Hylde3
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: e95ac18aa3fec464492c987e1b60c4bd, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8690424511739211621}
+  m_SourcePrefab: {fileID: 100100000, guid: e95ac18aa3fec464492c987e1b60c4bd, type: 3}
+--- !u!1 &2216011406245432839 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: e95ac18aa3fec464492c987e1b60c4bd, type: 3}
+  m_PrefabInstance: {fileID: 1297515478112285526}
+  m_PrefabAsset: {fileID: 0}
+--- !u!64 &8690424511739211621
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2216011406245432839}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 0}
