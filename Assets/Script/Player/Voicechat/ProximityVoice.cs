@@ -2,6 +2,7 @@ using System.Threading.Tasks;
 using Unity.Netcode;
 using Unity.Services.Vivox;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public enum VoiceMode { Lobby, Game }
 
@@ -15,6 +16,7 @@ public class ProximityVoice : MonoBehaviour
     private VoiceMode? applied;
 
     public bool IsMuted { get; private set; }
+    private bool? micMuted;
 
     public async void StartVoice(string sessionCode)
     {
@@ -24,6 +26,7 @@ public class ProximityVoice : MonoBehaviour
             gameChannel = "voice_" + sessionCode;
             applied = null;
             localPlayer = null;
+            micMuted = null;
 
             await VivoxService.Instance.InitializeAsync();
             if (!VivoxService.Instance.IsLoggedIn)
@@ -36,6 +39,7 @@ public class ProximityVoice : MonoBehaviour
             }
 
             loggedIn = true;
+            GameSettings.ApplyVoice();
         }
         catch (System.Exception e) { Debug.LogException(e); }
     }
@@ -52,8 +56,6 @@ public class ProximityVoice : MonoBehaviour
     public void SetMuted(bool muted)
     {
         IsMuted = muted;
-        if (muted) VivoxService.Instance.MuteInputDevice();
-        else VivoxService.Instance.UnmuteInputDevice();
     }
 
     private VoiceMode Wanted()
@@ -107,6 +109,18 @@ public class ProximityVoice : MonoBehaviour
             nextModeCheck = Time.time + 0.5f;
             var wanted = Wanted();
             if (applied != wanted) _ = Apply(wanted);
+        }
+
+        // The mic is muted if you muted it manually, or if push to talk is on and the key isn't held
+        var kb = Keyboard.current;
+        bool holding = kb != null && kb[GameSettings.PushToTalkKey].isPressed;
+        bool wantMuted = IsMuted || (GameSettings.PushToTalk && !holding);
+
+        if (micMuted != wantMuted)
+        {
+            micMuted = wantMuted;
+            if (wantMuted) VivoxService.Instance.MuteInputDevice();
+            else VivoxService.Instance.UnmuteInputDevice();
         }
 
         if (applied != VoiceMode.Game || Time.time < nextPosUpdate) return;
