@@ -110,6 +110,7 @@ public class GameManager : NetworkBehaviour
     // UI (Placeholder)
     private void OnGUI()
     {
+        if (SettingsMenu.IsOpen) return;
         if (!IsSpawned) return;
 
         if (State.Value == GameState.GameOver) DrawEndScreen("GAME OVER", Color.red);

@@ -71,7 +71,7 @@ public class PlayerNameTag : NetworkBehaviour
             displayName.Value = Fixed(p.name);
             colorIndex.Value = p.color;
         }
-        else
+        else // A player who comes in mid round
         {
             colorIndex.Value = FreeColor();
             displayName.Value = Fixed($"Player {OwnerClientId + 1}");

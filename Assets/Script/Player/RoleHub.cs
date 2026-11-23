@@ -45,6 +45,7 @@ public class RoleHud : MonoBehaviour
 
     private void OnGUI()
     {
+        if (SettingsMenu.IsOpen) return;
         if (!role.IsOwner || cam == null) return;
         if (Event.current.type != EventType.Repaint) return;
 

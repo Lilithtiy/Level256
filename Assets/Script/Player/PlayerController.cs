@@ -65,14 +65,13 @@ public class PlayerController : NetworkBehaviour
 
     private AudioListener audioListener;
 
-    private readonly NetworkVariable<bool> isCrouching = new(
-        false,
-        NetworkVariableReadPermission.Everyone,
-        NetworkVariableWritePermission.Owner);
+    private readonly NetworkVariable<bool> isCrouching = new(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
 
     private CharacterController controller;
     private float verticalVelocity;
     private float feetY;
+
+    private void ApplyFov() { if (camera != null) camera.fieldOfView = GameSettings.Fov; }
 
     public bool IsCrouching => isCrouching.Value;
 
@@ -111,6 +110,8 @@ public class PlayerController : NetworkBehaviour
         audioListener.enabled = IsOwner;
 
         if (!IsOwner) return;
+        ApplyFov();
+        GameSettings.Changed += ApplyFov;
 
         moveAction.action.Enable();
         jumpAction.action.Enable();
@@ -126,6 +127,7 @@ public class PlayerController : NetworkBehaviour
     {
         isCrouching.OnValueChanged -= OnCrouchChanged;
 
+        GameSettings.Changed -= ApplyFov;
         if (!IsOwner) return;
 
         moveAction.action.Disable();
@@ -149,9 +151,6 @@ public class PlayerController : NetworkBehaviour
         if (frozen) return;
 
        if (inputLocked) return;
-
-        if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
-            SetCursorLocked(false);
 
         if (Cursor.lockState != CursorLockMode.Locked &&
             Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
@@ -227,8 +226,8 @@ public class PlayerController : NetworkBehaviour
     {
         if(!IsOwner) return;
         //input fra spillerens roation i forbindelse med Unitys Time.deltaTime
-        float MouseX = lookInput.x * mouseSensitivity;
-        float MouseY = lookInput.y * mouseSensitivity;
+        float MouseX = lookInput.x * GameSettings.MouseSensitivity;
+        float MouseY = lookInput.y * GameSettings.MouseSensitivity;
 
         //y-værdien af mouse-input laves om til in-game x-rotation hvilket i Unity er "op og ned"
         xRotation -= MouseY;

@@ -27,6 +27,7 @@
                 <ui:Button name="color-btn" text="CHANGE COLOR" class="btn btn--small" />
                 <ui:Button name="name-btn" text="CHANGE NAME" class="btn btn--small" />
                 <ui:Button name="mute-btn" text="MUTE MIC" class="btn btn--small" />
+                <ui:Button name="settings-btn" text="SETTINGS" class="btn btn--small" />
             </ui:VisualElement>
 
             <ui:VisualElement class="lobby-footer">
