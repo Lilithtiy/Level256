@@ -60,12 +60,9 @@ public class SessionUI : MonoBehaviour
         try
         {
             var baseOptions = new SessionOptions { MaxPlayers = 4 };
-            var options = string.IsNullOrEmpty(relayRegion)
-                ? baseOptions.WithRelayNetwork()
-                : baseOptions.WithRelayNetwork(new RelayNetworkOptions(RelayProtocol.Default, relayRegion, true));
+            var options = string.IsNullOrEmpty(relayRegion) ? baseOptions.WithRelayNetwork() : baseOptions.WithRelayNetwork(new RelayNetworkOptions(RelayProtocol.Default, relayRegion, true));
 
             session = await MultiplayerService.Instance.CreateSessionAsync(options);
-            Debug.Log($"CreateSession took {Time.realtimeSinceStartup - start:0.0} s");
 
             JoinCode = session.Code;
             status = "Loading lobby...";
@@ -212,7 +209,7 @@ public class SessionUI : MonoBehaviour
 
     private void OnGUI()
     {
-        if (session != null || SettingsMenu.IsOpen) return;
+        if (session != null || SettingsMenu.IsOpen || CreditsMenu.IsOpen) return;
 
         BuildStyles();
         float s = Screen.height / 1080f;
@@ -285,6 +282,10 @@ public class SessionUI : MonoBehaviour
         y += 80 * s;
         if (Btn(new Rect(x, y, w, 56 * s), "SETTINGS", btnSmall))
             SettingsMenu.Instance?.Open();
+        
+        y += 64 * s;
+        if (Btn(new Rect(x, y, w, 56 * s), "CREDITS", btnSmall))
+            CreditsMenu.Instance?.Open();
 
         // Status/errors
         if (!string.IsNullOrEmpty(status))
