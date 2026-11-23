@@ -319,6 +319,63 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_RenderingLayers: 1
   m_ShadowRenderingLayers: 1
+--- !u!1001 &677884560
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: ded3b3874efb51d44a25e05266562194, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -26.058079
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: ded3b3874efb51d44a25e05266562194, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.70472413
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: ded3b3874efb51d44a25e05266562194, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0.67280775
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: ded3b3874efb51d44a25e05266562194, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.7071067
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: ded3b3874efb51d44a25e05266562194, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: ded3b3874efb51d44a25e05266562194, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: ded3b3874efb51d44a25e05266562194, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: ded3b3874efb51d44a25e05266562194, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: ded3b3874efb51d44a25e05266562194, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: ded3b3874efb51d44a25e05266562194, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: ded3b3874efb51d44a25e05266562194, type: 3}
+      propertyPath: m_Name
+      value: urinal
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: ded3b3874efb51d44a25e05266562194, type: 3}
 --- !u!1001 &731590962
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -14375,3 +14432,4 @@ SceneRoots:
   - {fileID: 2293138809207422621}
   - {fileID: 8340188593067364067}
   - {fileID: 7945208663998816447}
+  - {fileID: 677884560}
