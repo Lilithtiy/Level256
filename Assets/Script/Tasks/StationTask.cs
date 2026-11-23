@@ -185,6 +185,7 @@ public abstract class StationTask : NetworkBehaviour
         if (changed) WorkersChanged();
         if (workers.Count == 0) return;
 
+        // players who have moved too far away are removed
         ServerTick(Time.deltaTime);
         EmitWorkNoise(noiseRadius, 0.3f);
         CheckDone();

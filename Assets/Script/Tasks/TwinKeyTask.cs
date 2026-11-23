@@ -76,7 +76,7 @@ public class TwinKeyTask : StationTask
             if (!nm.ConnectedClients.TryGetValue(id, out var client) || client.PlayerObject == null) continue;
 
             int s = NearestStation(client.PlayerObject.transform.position);
-            if (s >= 0) mask |= 1 << s;
+            if (s >= 0) mask |= 1 << s; // one player can only hold one console
         }
         return mask;
     }
