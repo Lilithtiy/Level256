@@ -45,6 +45,8 @@ public class AudioManager : MonoBehaviour
     private bool gameplayMusicActive;
     private bool gameplayMusicReady;
 
+    private ScriptableAudio currentMusicAsset;
+
     private readonly List<AudioSource> audioPool = new List<AudioSource>();
 
     private void Awake()
@@ -141,7 +143,7 @@ public class AudioManager : MonoBehaviour
         source.transform.localPosition = Vector3.zero;
 
         source.clip = clip;
-        source.volume = audioEvent.volume;
+        source.volume = audioEvent.volume * GameSettings.SfxVolume; 
         source.pitch = audioEvent.GetPitch();
         source.loop = true;
 
@@ -186,7 +188,7 @@ public class AudioManager : MonoBehaviour
 
         // Set AudioSource properties based on ScriptableAudio settings
         source.clip = clip;
-        source.volume = audio.volume;
+        source.volume = audio.volume * GameSettings.SfxVolume;
         source.pitch = audio.GetPitch();
         source.loop = audio.looping;
 
@@ -202,6 +204,10 @@ public class AudioManager : MonoBehaviour
 
     private void Update()
     {
+        
+        if (!gameplayMusicActive && musicFadeCoroutine == null && currentMusicSource != null && currentMusicAsset != null)
+            currentMusicSource.volume = currentMusicAsset.volume * GameSettings.MusicVolume;
+
         // Iterate backwards so destroyed references can be removed safely
         for (int i = audioPool.Count - 1; i >= 0; i--)
         {
@@ -222,16 +228,12 @@ public class AudioManager : MonoBehaviour
         }
 
         // Handle dynamic gameplay music.
-        if (gameplayMusicActive && gameplayMusicReady)
+       if (gameplayMusicActive && gameplayMusicReady)
         {
             currentMusicIntensity = Mathf.MoveTowards(currentMusicIntensity, targetMusicIntensity, intensityTransitionSpeed * Time.unscaledDeltaTime);
 
-            // Ambient fades out as chase music fades in.
-            gameplayAmbientSource.volume =
-                ambientMusic.volume * (1f - currentMusicIntensity);
-
-            gameplayChaseSource.volume =
-                chaseMusic.volume * currentMusicIntensity;
+            gameplayAmbientSource.volume = ambientMusic.volume * (1f - currentMusicIntensity) * GameSettings.MusicVolume;
+            gameplayChaseSource.volume   = chaseMusic.volume * currentMusicIntensity * GameSettings.MusicVolume;
         }
     }
 
@@ -328,6 +330,9 @@ public class AudioManager : MonoBehaviour
 
         currentMusicSource = nextSource;
         currentMusicState = state;
+        currentMusicAsset = music;
+
+        musicFadeCoroutine = StartCoroutine(CrossfadeMusic(previousSource, nextSource, music.volume * GameSettings.MusicVolume));
 
         // Fade between the old and new music
         musicFadeCoroutine = StartCoroutine(CrossfadeMusic(previousSource, nextSource, music.volume));

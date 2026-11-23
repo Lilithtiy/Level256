@@ -212,7 +212,7 @@ public class SessionUI : MonoBehaviour
 
     private void OnGUI()
     {
-        if (session != null) return;
+        if (session != null || SettingsMenu.IsOpen) return;
 
         BuildStyles();
         float s = Screen.height / 1080f;
@@ -281,6 +281,10 @@ public class SessionUI : MonoBehaviour
             JoinGame();
         }
         GUI.enabled = true;
+
+        y += 80 * s;
+        if (Btn(new Rect(x, y, w, 56 * s), "SETTINGS", btnSmall))
+            SettingsMenu.Instance?.Open();
 
         // Status/errors
         if (!string.IsNullOrEmpty(status))
