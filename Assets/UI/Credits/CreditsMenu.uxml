@@ -1,0 +1,10 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <Style src="Credits.uss" />
+    <ui:VisualElement name="credits-root" class="credits-root">
+        <ui:VisualElement class="credits-panel">
+            <ui:Label text="CREDITS" class="credits-title" />
+            <ui:ScrollView name="credits-scroll" class="credits-scroll" />
+            <ui:Button name="credits-back" text="BACK" class="credits-btn" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

@@ -149,6 +149,7 @@ public class SessionUI : MonoBehaviour
 
     // UI
     private GUIStyle titleStyle, tagStyle, labelStyle, btnBig, btnSmall, field, statusStyle;
+    private GUIStyle footerLeft, footerCenter, footerRight;
 
     private GUIStyle Make(TextAnchor align, Color color, FontStyle fs = FontStyle.Normal, bool hover = false)
     {
@@ -176,6 +177,9 @@ public class SessionUI : MonoBehaviour
         btnSmall = Make(TextAnchor.MiddleCenter, Yellow, FontStyle.Normal, true);
         btnSmall.hover.textColor = Color.white;
         btnSmall.active.textColor = Color.white;
+        footerLeft   = new GUIStyle(btnSmall) { alignment = TextAnchor.MiddleLeft };
+        footerCenter = new GUIStyle(btnSmall) { alignment = TextAnchor.MiddleCenter };
+        footerRight  = new GUIStyle(btnSmall) { alignment = TextAnchor.MiddleRight };
         statusStyle = Make(TextAnchor.MiddleCenter, gray);
 
         field = new GUIStyle(GUI.skin.textField) { alignment = TextAnchor.MiddleCenter };
@@ -191,6 +195,8 @@ public class SessionUI : MonoBehaviour
         btnSmall.fontSize = Mathf.RoundToInt(34 * s);
         field.fontSize = Mathf.RoundToInt(30 * s);
         statusStyle.fontSize = Mathf.RoundToInt(24 * s);
+
+        footerLeft.fontSize = footerCenter.fontSize = footerRight.fontSize = Mathf.RoundToInt(38 * s);
     }
 
     private static void Fill(Rect r, Color c)
@@ -284,22 +290,20 @@ public class SessionUI : MonoBehaviour
         }
         GUI.enabled = true;
 
-        y += 80 * s;
+        // Footer:
+        float margin = 60 * s;
+        float third = (Screen.width - margin * 2f) / 3f;
+        float fy = Screen.height - 100 * s;
+        float fh = 56 * s;
 
-        Fill(new Rect(x, y + 10 * s, w * 0.4f, 2 * s), new Color(1f, 1f, 1f, 0.15f));
-        Fill(new Rect(x + w * 0.6f, y + 10 * s, w * 0.4f, 2 * s), new Color(1f, 1f, 1f, 0.15f));
-        GUI.Label(new Rect(x, y - 6 * s, w, 34 * s), "OR", tagStyle);
-        y += 50 * s;
 
-        if (Btn(new Rect(x, y, w, 80 * s), "TUTORIAL", btnBig)) GameFlow.Instance.StartTutorial();
-
-        y += 100 * s;
-
-        if (Btn(new Rect(x, y, w, 56 * s), "SETTINGS", btnSmall))
+        if (GUI.Button(new Rect(margin, fy, third, fh), "SETTINGS", footerLeft))
             SettingsMenu.Instance?.Open();
         
-        y += 64 * s;
-        if (Btn(new Rect(x, y, w, 56 * s), "CREDITS", btnSmall))
+        if (GUI.Button(new Rect(margin + third, fy, third, fh), "TUTORIAL", footerCenter))
+            GameFlow.Instance.StartTutorial();
+
+        if (GUI.Button(new Rect(margin + third * 2f, fy, third, fh), "CREDITS", footerRight))
             CreditsMenu.Instance?.Open();
 
         // Status/errors
@@ -307,7 +311,7 @@ public class SessionUI : MonoBehaviour
         {
             bool error = status.Contains("failed");
             statusStyle.normal.textColor = error ? new Color(1f, 0.4f, 0.35f) : new Color(1f, 1f, 1f, 0.55f);
-            GUI.Label(new Rect(cx - 600 * s, Screen.height - 90 * s, 1200 * s, 40 * s), status, statusStyle);
+            GUI.Label(new Rect(cx - 600 * s, Screen.height - 160 * s, 1200 * s, 40 * s), status, statusStyle);
         }
     }
 }
