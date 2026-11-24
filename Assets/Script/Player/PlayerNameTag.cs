@@ -147,6 +147,12 @@ public class PlayerNameTag : NetworkBehaviour
     {
         if (tagTransform == null) return;
 
+        if (LobbyManager.Instance != null && LobbyManager.Instance.IsSpawned)
+        {
+            SetTagVisible(false);
+            return;
+        }
+
         var cam = ViewCamera();
         if (cam == null) { SetTagVisible(false); return; }
 

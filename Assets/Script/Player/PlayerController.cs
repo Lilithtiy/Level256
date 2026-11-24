@@ -121,7 +121,6 @@ public class PlayerController : NetworkBehaviour
         sprintAction.action.Enable();
         lookAction.action.Enable();
 
-        if (visual != null) visual.gameObject.SetActive(false);
         SetCursorLocked(!IsInLobby);
     }
 
@@ -141,6 +140,11 @@ public class PlayerController : NetworkBehaviour
 
     private void Update()
     {
+        bool showVisual = !IsOwner && !IsInLobby;
+
+        if (visual != null && visual.gameObject.activeSelf != showVisual)
+        visual.gameObject.SetActive(showVisual);
+
         if (!IsOwner) return;
 
         if (IsInLobby)
