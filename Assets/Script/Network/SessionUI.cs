@@ -29,6 +29,8 @@ public class SessionUI : MonoBehaviour
 
     public static string JoinCode;
 
+    private bool leaving;
+
     private void Start()
     {
         playerName = PlayerName.Load();
@@ -115,21 +117,29 @@ public class SessionUI : MonoBehaviour
         }
     }
 
-    public void LeaveSession(string message = "")
+    public async void LeaveSession(string message = "")
     {
-        GetComponent<ProximityVoice>().StopVoice();
+        if (leaving) return;
+        leaving = true;
+
+        GetComponent<ProximityVoice>()?.StopVoice();
 
         var oldSession = session;
         session = null;
         JoinCode = null;
         status = message;
+        busy = true;
 
-        _ = LeaveAsyncSafe(oldSession);
+        await LeaveAsyncSafe(oldSession);
 
         var nm = NetworkManager.Singleton;
-        if (nm != null && nm.IsListening) nm.Shutdown();
+        if (nm != null && nm.IsListening)
+            nm.Shutdown();
 
-        Invoke(nameof(GoToBoot), 0.2f);
+        GoToBoot();
+
+        busy = false;
+        leaving = false;
     }
 
     private async System.Threading.Tasks.Task LeaveAsyncSafe(ISession s)
@@ -141,10 +151,14 @@ public class SessionUI : MonoBehaviour
 
     private void GoToBoot()
     {
-        Cursor.lockState = CursorLockMode.None; Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+
         if (SceneManager.GetActiveScene().name != bootSceneName)
+        {
             SceneManager.LoadScene(bootSceneName);
             AudioManager.audioManagerInstance?.PlayMusic(AudioManager.MusicState.MainMenu);
+        }
     }
 
     // UI
