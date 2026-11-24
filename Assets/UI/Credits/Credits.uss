@@ -1,0 +1,51 @@
+.credits-root {
+    position: absolute; left: 0; right: 0; top: 0; bottom: 0;
+    background-color: rgba(0,0,0,0.85);
+    align-items: center; justify-content: center;
+    display: none;
+}
+
+.credits-panel {
+    width: 820px;
+    padding: 24px 40px;
+    background-color: rgb(14,14,18);
+    border-width: 2px;
+    border-color: rgb(255,235,4);
+}
+
+.credits-title {
+    font-size: 56px;
+    -unity-font-style: bold-and-italic;
+    color: rgb(255,235,4);
+    -unity-text-align: middle-center;
+    margin-bottom: 12px;
+}
+
+.credits-scroll { height: 520px; }
+
+.credits-heading {
+    font-size: 30px;
+    color: rgb(255,235,4);
+    -unity-text-align: middle-center;
+    margin-top: 26px;
+    margin-bottom: 6px;
+}
+
+.credits-line {
+    font-size: 26px;
+    color: rgba(255,255,255,0.85);
+    -unity-text-align: middle-center;
+    white-space: normal;
+    margin-top: 2px;
+}
+
+.credits-spacer { height: 200px; }
+
+.credits-btn {
+    background-color: rgba(0,0,0,0);
+    border-width: 0;
+    color: rgb(255,235,4);
+    font-size: 38px;
+    margin-top: 14px;
+}
+.credits-btn:hover { color: white; }

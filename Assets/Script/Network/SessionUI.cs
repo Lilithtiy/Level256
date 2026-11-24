@@ -17,6 +17,7 @@ public class SessionUI : MonoBehaviour
 
     [Header("Scenes")]
     [SerializeField] private string bootSceneName = "Bootstrap";
+    [SerializeField] private string tutorialSceneName = "Tutorial";
 
     private static readonly Color Yellow = new Color(1f, 0.92f, 0.016f, 1f);
 
@@ -27,6 +28,8 @@ public class SessionUI : MonoBehaviour
     private bool busy;
 
     public static string JoinCode;
+
+    private bool leaving;
 
     private void Start()
     {
@@ -114,21 +117,29 @@ public class SessionUI : MonoBehaviour
         }
     }
 
-    public void LeaveSession(string message = "")
+    public async void LeaveSession(string message = "")
     {
-        GetComponent<ProximityVoice>().StopVoice();
+        if (leaving) return;
+        leaving = true;
+
+        GetComponent<ProximityVoice>()?.StopVoice();
 
         var oldSession = session;
         session = null;
         JoinCode = null;
         status = message;
+        busy = true;
 
-        _ = LeaveAsyncSafe(oldSession);
+        await LeaveAsyncSafe(oldSession);
 
         var nm = NetworkManager.Singleton;
-        if (nm != null && nm.IsListening) nm.Shutdown();
+        if (nm != null && nm.IsListening)
+            nm.Shutdown();
 
-        Invoke(nameof(GoToBoot), 0.2f);
+        GoToBoot();
+
+        busy = false;
+        leaving = false;
     }
 
     private async System.Threading.Tasks.Task LeaveAsyncSafe(ISession s)
@@ -140,14 +151,19 @@ public class SessionUI : MonoBehaviour
 
     private void GoToBoot()
     {
-        Cursor.lockState = CursorLockMode.None; Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+
         if (SceneManager.GetActiveScene().name != bootSceneName)
+        {
             SceneManager.LoadScene(bootSceneName);
             AudioManager.audioManagerInstance?.PlayMusic(AudioManager.MusicState.MainMenu);
+        }
     }
 
     // UI
     private GUIStyle titleStyle, tagStyle, labelStyle, btnBig, btnSmall, field, statusStyle;
+    private GUIStyle footerLeft, footerCenter, footerRight;
 
     private GUIStyle Make(TextAnchor align, Color color, FontStyle fs = FontStyle.Normal, bool hover = false)
     {
@@ -175,6 +191,9 @@ public class SessionUI : MonoBehaviour
         btnSmall = Make(TextAnchor.MiddleCenter, Yellow, FontStyle.Normal, true);
         btnSmall.hover.textColor = Color.white;
         btnSmall.active.textColor = Color.white;
+        footerLeft   = new GUIStyle(btnSmall) { alignment = TextAnchor.MiddleLeft };
+        footerCenter = new GUIStyle(btnSmall) { alignment = TextAnchor.MiddleCenter };
+        footerRight  = new GUIStyle(btnSmall) { alignment = TextAnchor.MiddleRight };
         statusStyle = Make(TextAnchor.MiddleCenter, gray);
 
         field = new GUIStyle(GUI.skin.textField) { alignment = TextAnchor.MiddleCenter };
@@ -190,6 +209,8 @@ public class SessionUI : MonoBehaviour
         btnSmall.fontSize = Mathf.RoundToInt(34 * s);
         field.fontSize = Mathf.RoundToInt(30 * s);
         statusStyle.fontSize = Mathf.RoundToInt(24 * s);
+
+        footerLeft.fontSize = footerCenter.fontSize = footerRight.fontSize = Mathf.RoundToInt(38 * s);
     }
 
     private static void Fill(Rect r, Color c)
@@ -209,6 +230,10 @@ public class SessionUI : MonoBehaviour
 
     private void OnGUI()
     {
+        // Only display this UI in Bootstrap
+        if (SceneManager.GetActiveScene().name == tutorialSceneName)
+            return;
+
         if (session != null || SettingsMenu.IsOpen || CreditsMenu.IsOpen) return;
 
         BuildStyles();
@@ -279,12 +304,20 @@ public class SessionUI : MonoBehaviour
         }
         GUI.enabled = true;
 
-        y += 80 * s;
-        if (Btn(new Rect(x, y, w, 56 * s), "SETTINGS", btnSmall))
+        // Footer:
+        float margin = 60 * s;
+        float third = (Screen.width - margin * 2f) / 3f;
+        float fy = Screen.height - 100 * s;
+        float fh = 56 * s;
+
+
+        if (GUI.Button(new Rect(margin, fy, third, fh), "SETTINGS", footerLeft))
             SettingsMenu.Instance?.Open();
         
-        y += 64 * s;
-        if (Btn(new Rect(x, y, w, 56 * s), "CREDITS", btnSmall))
+        if (GUI.Button(new Rect(margin + third, fy, third, fh), "TUTORIAL", footerCenter))
+            GameFlow.Instance.StartTutorial();
+
+        if (GUI.Button(new Rect(margin + third * 2f, fy, third, fh), "CREDITS", footerRight))
             CreditsMenu.Instance?.Open();
 
         // Status/errors
@@ -292,7 +325,7 @@ public class SessionUI : MonoBehaviour
         {
             bool error = status.Contains("failed");
             statusStyle.normal.textColor = error ? new Color(1f, 0.4f, 0.35f) : new Color(1f, 1f, 1f, 0.55f);
-            GUI.Label(new Rect(cx - 600 * s, Screen.height - 90 * s, 1200 * s, 40 * s), status, statusStyle);
+            GUI.Label(new Rect(cx - 600 * s, Screen.height - 160 * s, 1200 * s, 40 * s), status, statusStyle);
         }
     }
 }

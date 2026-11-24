@@ -226,21 +226,22 @@ MonoBehaviour:
   watchHalfAngle: 55
   shyHuntRange: 80
   watchPointHeight: 0.9
-  detectRange: 15
+  isTutorial: 0
+  detectRange: 13
   eyeHeight: 1.5
   hearingMultiplier: 1
   wallMuffle: 0.5
   investigateSeconds: 6
   searchRadius: 5
-  speed: 3.5
-  wanderRadius: 12
+  speed: 3
+  wanderRadius: 10
   repathInterval: 0.25
   catchDistance: 1.8
   stunSeconds: 3
   fleeDistance: 10
   fleeRepathInterval: 0.5
   ghostDeathAudio: {fileID: 11400000, guid: 5532870719781fb4f927f997023a97a8, type: 2}
-  ghostRespawnDelay: 5
+  ghostRespawnDelay: 7
   ghostPrefab: {fileID: 0}
 --- !u!114 &5764462272341419548
 MonoBehaviour:

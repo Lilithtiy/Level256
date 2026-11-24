@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Unity.Netcode;
+using Unity.VectorGraphics;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -9,6 +10,7 @@ public class GameFlow : MonoBehaviour
 
     [SerializeField] private string lobbySceneName = "Lobby";
     [SerializeField] private string gameSceneName = "Level256";
+    [SerializeField] private string tutorialSceneName = "Tutorial";
     [SerializeField] private GameObject playerPrefab;
 
     private bool hooked;
@@ -39,6 +41,19 @@ public class GameFlow : MonoBehaviour
 
     // Called by the host
     public void OpenLobby() => LoadScene(lobbySceneName);
+    public void StartTutorial()
+    {
+        var nm = NetworkManager.Singleton;
+
+        nm.StartHost();
+
+        LoadScene(tutorialSceneName);
+
+        AudioManager.audioManagerInstance?.PlayMusic(AudioManager.MusicState.Ambient);
+
+        Debug.Log("Tried loading tutorial scene");
+    }
+
     public void StartGame() => LoadScene(gameSceneName);
     public void ReturnToLobby() => LoadScene(lobbySceneName);
 
@@ -70,7 +85,7 @@ public class GameFlow : MonoBehaviour
     private void OnLoadEventCompleted(string sceneName, LoadSceneMode mode,
         List<ulong> clientsCompleted, List<ulong> clientsTimedOut)
     {
-        if (sceneName != gameSceneName) return;
+        if (sceneName != gameSceneName && sceneName != tutorialSceneName) return;
 
         int index = 0;
         foreach (ulong clientId in clientsCompleted)
@@ -83,7 +98,7 @@ public class GameFlow : MonoBehaviour
     // A player who joins in the middle of a round
     private void OnSynchronizeComplete(ulong clientId)
     {
-        if (SceneManager.GetActiveScene().name != gameSceneName) return;
+        if (SceneManager.GetActiveScene().name != gameSceneName && SceneManager.GetActiveScene().name != tutorialSceneName) return;
         if (GameManager.Instance == null) return;
 
         var player = SpawnPlayer(clientId, Random.Range(0, 4));

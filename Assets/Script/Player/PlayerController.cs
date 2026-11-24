@@ -61,6 +61,8 @@ public class PlayerController : NetworkBehaviour
 
     private bool inputLocked;
 
+    private bool IsInLobby => LobbyManager.Instance != null && LobbyManager.Instance.IsSpawned;
+
     public bool IsCaught => isCaught;
 
     private AudioListener audioListener;
@@ -119,8 +121,7 @@ public class PlayerController : NetworkBehaviour
         sprintAction.action.Enable();
         lookAction.action.Enable();
 
-        if (visual != null) visual.gameObject.SetActive(false);
-        SetCursorLocked(true);
+        SetCursorLocked(!IsInLobby);
     }
 
     public override void OnNetworkDespawn()
@@ -139,7 +140,18 @@ public class PlayerController : NetworkBehaviour
 
     private void Update()
     {
+        bool showVisual = !IsOwner && !IsInLobby;
+
+        if (visual != null && visual.gameObject.activeSelf != showVisual)
+        visual.gameObject.SetActive(showVisual);
+
         if (!IsOwner) return;
+
+        if (IsInLobby)
+        {
+            SetCursorLocked(false);
+            return;
+        }
 
         bool frozen = GameManager.Instance != null && GameManager.Instance.State.Value != GameState.Playing;
 
@@ -152,8 +164,7 @@ public class PlayerController : NetworkBehaviour
 
        if (inputLocked) return;
 
-        if (Cursor.lockState != CursorLockMode.Locked &&
-            Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
+        if (Cursor.lockState != CursorLockMode.Locked && Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame) 
             SetCursorLocked(true);
 
         if (isCaught) return;
@@ -240,8 +251,8 @@ public class PlayerController : NetworkBehaviour
 
     private void SetCursorLocked(bool locked)
     {
-        Cursor.lockState = locked ? CursorLockMode.Locked : CursorLockMode.None;
-        Cursor.visible = !locked;
+        UnityEngine.Cursor.lockState = locked ? CursorLockMode.Locked : CursorLockMode.None;
+        UnityEngine.Cursor.visible = !locked;
     }
 
     [Rpc(SendTo.Owner)]

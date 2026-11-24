@@ -307,6 +307,7 @@ MonoBehaviour:
   tagline: UP TO 4 PLAYERS
   font: {fileID: 0}
   bootSceneName: Bootstrap
+  tutorialSceneName: Tutorial
 --- !u!114 &421671330
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -366,7 +367,7 @@ MonoBehaviour:
   NetworkConfig:
     ProtocolVersion: 0
     NetworkTransport: {fileID: 421671331}
-    PlayerPrefab: {fileID: 0}
+    PlayerPrefab: {fileID: 5990630632534819751, guid: 5544be014d679cd4fbed60eb334e9b8e, type: 3}
     Prefabs:
       NetworkPrefabsLists:
       - {fileID: 11400000, guid: cf7ef1ecbfb9569459ae5f6aec8ea047, type: 2}
@@ -422,6 +423,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameFlow
   lobbySceneName: Lobby
   gameSceneName: TheGameGame
+  tutorialSceneName: Tutorial
   playerPrefab: {fileID: 5990630632534819751, guid: 5544be014d679cd4fbed60eb334e9b8e, type: 3}
 --- !u!1 &524637252
 GameObject:
@@ -455,7 +457,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: UnityEngine.dll::UnityEngine.UIElements.UIDocument
   m_PanelSettings: {fileID: 11400000, guid: bda4802dc31b3d24b97c15ebfcc364f7, type: 2}
   m_ParentUI: {fileID: 0}
-  sourceAsset: {fileID: 0}
+  sourceAsset: {fileID: 9197481963319205126, guid: 09469084aac3ed949a8243f2b4874002, type: 3}
   m_SortingOrder: 0
   m_Position: 0
   m_WorldSpaceSizeMode: 1
@@ -492,7 +494,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CreditsMenu
   sortingOrder: 100
-  title: CREDITS
   autoScroll: 1
   scrollSpeed: 40
   clickAudio: {fileID: 0}

@@ -17,8 +17,8 @@ public class CreditsMenu : MonoBehaviour
     public static CreditsMenu Instance { get; private set; }
     public static bool IsOpen => Instance != null && Instance.open;
 
+    [Tooltip("Higher than the other UI documents so this draws on top")]
     [SerializeField] private int sortingOrder = 100;
-    [SerializeField] private string title = "CREDITS";
     [SerializeField] private bool autoScroll = true;
     [Tooltip("Pixels per second")]
     [SerializeField] private float scrollSpeed = 40f;
@@ -27,15 +27,12 @@ public class CreditsMenu : MonoBehaviour
     [SerializeField]
     private List<Section> sections = new()
     {
-        new Section { heading = "GAME DESIGN & PROGRAMMING", lines = new[] { "Name" } },
+        new Section { heading = "GAME DESIGN & PROGRAMMING", lines = new[] { "Your name" } },
         new Section { heading = "MUSIC & SOUND", lines = new[] { "Name / source" } },
         new Section { heading = "SPECIAL THANKS", lines = new[] { "Playtesters" } },
     };
 
-    private static readonly Color Yellow = new Color(1f, 0.92f, 0.016f, 1f);
-    private static readonly Color Text = new Color(1f, 1f, 1f, 0.85f);
-
-    private VisualElement overlay;
+    private VisualElement root;
     private ScrollView scroll;
     private bool open;
     private float pauseUntil;
@@ -74,10 +71,10 @@ public class CreditsMenu : MonoBehaviour
 
     public void Open()
     {
-        if (open || !EnsureBuilt()) return;
+        if (open || !TryBind()) return;
 
         open = true;
-        overlay.style.display = DisplayStyle.Flex;
+        root.style.display = DisplayStyle.Flex;
         scroll.verticalScroller.value = 0f;
         pauseUntil = Time.unscaledTime + 1.5f; // short pause before it starts moving
     }
@@ -87,7 +84,7 @@ public class CreditsMenu : MonoBehaviour
         if (!open) return;
 
         open = false;
-        if (overlay != null) overlay.style.display = DisplayStyle.None;
+        if (root != null) root.style.display = DisplayStyle.None;
     }
 
     private void Click()
@@ -96,46 +93,35 @@ public class CreditsMenu : MonoBehaviour
             AudioManager.audioManagerInstance.PlayLocal(clickAudio);
     }
 
-    private bool EnsureBuilt()
+    private bool TryBind()
     {
-        if (overlay != null && overlay.panel != null) return true;
+        if (root != null && root.panel != null) return true;
 
         var doc = GetComponent<UIDocument>();
         if (doc.rootVisualElement == null) return false;
 
+        var r = doc.rootVisualElement.Q("credits-root");
+        if (r == null)
+        {
+            Debug.LogError("CreditsMenu: set CreditsMenu.uxml as the Source Asset on the UIDocument.");
+            return false;
+        }
+
         doc.sortingOrder = sortingOrder;
+        root = r;
 
-        overlay = new VisualElement { name = "credits-overlay" };
-        var o = overlay.style;
-        o.position = Position.Absolute;
-        o.left = 0; o.right = 0; o.top = 0; o.bottom = 0;
-        o.backgroundColor = new Color(0f, 0f, 0f, 0.85f);
-        o.alignItems = Align.Center;
-        o.justifyContent = Justify.Center;
-        o.display = DisplayStyle.None;
-        doc.rootVisualElement.Add(overlay);
+        scroll = root.Q<ScrollView>("credits-scroll");
+        scroll.RegisterCallback<WheelEvent>(_ => pauseUntil = Time.unscaledTime + 3f); // manual scrolling pauses auto-scroll
+        root.Q<Button>("credits-back").clicked += () => { Click(); Close(); };
 
-        var panel = new VisualElement();
-        var p = panel.style;
-        p.width = 820;
-        p.paddingTop = 24; p.paddingBottom = 24; p.paddingLeft = 40; p.paddingRight = 40;
-        p.backgroundColor = new Color(14 / 255f, 14 / 255f, 18 / 255f, 1f);
-        p.borderTopWidth = 2; p.borderBottomWidth = 2; p.borderLeftWidth = 2; p.borderRightWidth = 2;
-        p.borderTopColor = Yellow; p.borderBottomColor = Yellow; p.borderLeftColor = Yellow; p.borderRightColor = Yellow;
-        overlay.Add(panel);
+        BuildList();
+        return true;
+    }
 
-        var titleLabel = new Label(title);
-        titleLabel.style.fontSize = 56;
-        titleLabel.style.unityFontStyleAndWeight = FontStyle.BoldAndItalic;
-        titleLabel.style.color = Yellow;
-        titleLabel.style.unityTextAlign = TextAnchor.MiddleCenter;
-        titleLabel.style.marginBottom = 12;
-        panel.Add(titleLabel);
-
-        scroll = new ScrollView(ScrollViewMode.Vertical);
-        scroll.style.height = 520;
-        scroll.RegisterCallback<WheelEvent>(_ => pauseUntil = Time.unscaledTime + 3f);   // manual scrolling pauses auto-scroll
-        panel.Add(scroll);
+    // The names come from the Inspector list
+    private void BuildList()
+    {
+        scroll.Clear();
 
         foreach (var section in sections)
         {
@@ -144,11 +130,7 @@ public class CreditsMenu : MonoBehaviour
             if (!string.IsNullOrEmpty(section.heading))
             {
                 var h = new Label(section.heading);
-                h.style.fontSize = 30;
-                h.style.color = Yellow;
-                h.style.unityTextAlign = TextAnchor.MiddleCenter;
-                h.style.marginTop = 26;
-                h.style.marginBottom = 6;
+                h.AddToClassList("credits-heading");
                 scroll.Add(h);
             }
 
@@ -157,38 +139,14 @@ public class CreditsMenu : MonoBehaviour
             foreach (string line in section.lines)
             {
                 var l = new Label(line);
-                l.style.fontSize = 26;
-                l.style.color = Text;
-                l.style.unityTextAlign = TextAnchor.MiddleCenter;
-                l.style.whiteSpace = WhiteSpace.Normal;
-                l.style.marginTop = 2;
+                l.AddToClassList("credits-line");
                 scroll.Add(l);
             }
         }
 
         // Empty space at the end so the last line can scroll up
         var spacer = new VisualElement();
-        spacer.style.height = 200;
+        spacer.AddToClassList("credits-spacer");
         scroll.Add(spacer);
-
-        var back = MakeButton("BACK", () => { Click(); Close(); });
-        back.style.marginTop = 14;
-        panel.Add(back);
-
-        return true;
-    }
-
-    private static Button MakeButton(string text, Action onClick)
-    {
-        var b = new Button(onClick) { text = text };
-        var s = b.style;
-        s.backgroundColor = Color.clear;
-        s.borderTopWidth = 0; s.borderBottomWidth = 0; s.borderLeftWidth = 0; s.borderRightWidth = 0;
-        s.color = Yellow;
-        s.fontSize = 38;
-
-        b.RegisterCallback<PointerEnterEvent>(_ => b.style.color = Color.white);
-        b.RegisterCallback<PointerLeaveEvent>(_ => b.style.color = Yellow);
-        return b;
     }
 }
