@@ -9,16 +9,36 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: -7505943287603854569, guid: 898d63781942a18409a5c01130df1fc7, type: 3}
+      propertyPath: speed
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: -7505943287603854569, guid: 898d63781942a18409a5c01130df1fc7, type: 3}
+      propertyPath: watchRange
+      value: 40
+      objectReference: {fileID: 0}
+    - target: {fileID: -7505943287603854569, guid: 898d63781942a18409a5c01130df1fc7, type: 3}
+      propertyPath: detectRange
+      value: 13
+      objectReference: {fileID: 0}
+    - target: {fileID: -7505943287603854569, guid: 898d63781942a18409a5c01130df1fc7, type: 3}
       propertyPath: personality
       value: 3
       objectReference: {fileID: 0}
     - target: {fileID: -7505943287603854569, guid: 898d63781942a18409a5c01130df1fc7, type: 3}
       propertyPath: unseenSpeed
-      value: 6
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: -7505943287603854569, guid: 898d63781942a18409a5c01130df1fc7, type: 3}
       propertyPath: shyHuntRange
-      value: 60
+      value: 50
+      objectReference: {fileID: 0}
+    - target: {fileID: -7505943287603854569, guid: 898d63781942a18409a5c01130df1fc7, type: 3}
+      propertyPath: wanderRadius
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: -7505943287603854569, guid: 898d63781942a18409a5c01130df1fc7, type: 3}
+      propertyPath: watchHalfAngle
+      value: 45
       objectReference: {fileID: 0}
     - target: {fileID: 15868512101070523, guid: 898d63781942a18409a5c01130df1fc7, type: 3}
       propertyPath: GlobalObjectIdHash
