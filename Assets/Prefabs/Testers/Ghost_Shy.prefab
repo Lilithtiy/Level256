@@ -12,6 +12,14 @@ PrefabInstance:
       propertyPath: personality
       value: 3
       objectReference: {fileID: 0}
+    - target: {fileID: -7505943287603854569, guid: 898d63781942a18409a5c01130df1fc7, type: 3}
+      propertyPath: unseenSpeed
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: -7505943287603854569, guid: 898d63781942a18409a5c01130df1fc7, type: 3}
+      propertyPath: shyHuntRange
+      value: 60
+      objectReference: {fileID: 0}
     - target: {fileID: 15868512101070523, guid: 898d63781942a18409a5c01130df1fc7, type: 3}
       propertyPath: GlobalObjectIdHash
       value: 4023532730
