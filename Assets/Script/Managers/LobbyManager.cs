@@ -540,6 +540,12 @@ public class LobbyManager : NetworkBehaviour
 
     private void Update()
     {
+        if (IsSpawned)
+        {
+            UnityEngine.Cursor.lockState = CursorLockMode.None;
+            UnityEngine.Cursor.visible = true;
+        }
+
         if (!IsSpawned || !TryBind()) return;
 
         HandleKeys();
