@@ -6,12 +6,10 @@ public enum RoleType { None, Locater, TeamLeader, Worker, Seeker }
 
 public class PlayerRole : NetworkBehaviour
 {
-    public NetworkVariable<RoleType> Current = new(
-        RoleType.None,
-        NetworkVariableReadPermission.Owner,
-        NetworkVariableWritePermission.Server);
+    // The server assigns roles, only the owning player can read their role
+    public NetworkVariable<RoleType> Current = new(RoleType.None, NetworkVariableReadPermission.Owner, NetworkVariableWritePermission.Server);
 
-    // Its server only. its give every player a different role, picked at random
+    // Server assigns shuffled roles to all spawned players
     public static void AssignAll()
     {
         if (!NetworkManager.Singleton.IsServer) return;
@@ -21,6 +19,7 @@ public class PlayerRole : NetworkBehaviour
             RoleType.Locater, RoleType.TeamLeader, RoleType.Worker, RoleType.Seeker
         };
 
+        // Shuffle the role list so assignments are random
         for (int i = roles.Count - 1; i > 0; i--)
         {
             int j = Random.Range(0, i + 1);
@@ -39,7 +38,7 @@ public class PlayerRole : NetworkBehaviour
         }
     }
 
-    // This is server is only, a player who joins mid-round gets a role nobody else has
+    // Give a mid-round joiner a role that no other player currently has
     public static void AssignUnused(PlayerRole target)
     {
         if (!NetworkManager.Singleton.IsServer || target == null) return;

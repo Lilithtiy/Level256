@@ -44,6 +44,7 @@ public class SessionUI : MonoBehaviour
             NetworkManager.Singleton.OnClientStopped -= OnNetworkStopped;
     }
 
+    // Clean up the session and return to menu music when networking stops
     private void OnNetworkStopped(bool wasHost)
     {
         if (session == null) return;
@@ -62,6 +63,7 @@ public class SessionUI : MonoBehaviour
 
         try
         {
+            // Create a session with Relay, optionally choosing a region
             var baseOptions = new SessionOptions { MaxPlayers = 4 };
             var options = string.IsNullOrEmpty(relayRegion) ? baseOptions.WithRelayNetwork() : baseOptions.WithRelayNetwork(new RelayNetworkOptions(RelayProtocol.Default, relayRegion, true));
 
@@ -97,6 +99,7 @@ public class SessionUI : MonoBehaviour
 
         try
         {
+            // Join the session using the code entered in the menu
             session = await MultiplayerService.Instance.JoinSessionByCodeAsync(joinCode.Trim());
             JoinCode = session.Code;
             Debug.Log($"JoinSession took {Time.realtimeSinceStartup - start:0.0} s");
@@ -117,6 +120,7 @@ public class SessionUI : MonoBehaviour
         }
     }
 
+    // Leave voice and multiplayer services, shut down networking, and return to the boot scene
     public async void LeaveSession(string message = "")
     {
         if (leaving) return;
@@ -178,6 +182,7 @@ public class SessionUI : MonoBehaviour
         return st;
     }
 
+    // Create the menu styles
     private void BuildStyles()
     {
         if (titleStyle != null) return;
@@ -200,6 +205,7 @@ public class SessionUI : MonoBehaviour
         if (font != null) field.font = font;
     }
 
+    // Scale text to keep the menu readable at different screen resolutions
     private void ScaleStyles(float s)
     {
         titleStyle.fontSize = Mathf.RoundToInt(150 * s);
@@ -230,7 +236,7 @@ public class SessionUI : MonoBehaviour
 
     private void OnGUI()
     {
-        // Only display this UI in Bootstrap
+        // Hide this menu in the tutorial and while another overlay is open
         if (SceneManager.GetActiveScene().name == tutorialSceneName)
             return;
 

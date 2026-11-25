@@ -29,6 +29,7 @@ public class GameFlow : MonoBehaviour
         nm.OnClientStopped += _ => hooked = false;
     }
 
+    // Register server callbacks once the network scene manager is available
     private void Hook()
     {
         var nm = NetworkManager.Singleton;
@@ -39,7 +40,7 @@ public class GameFlow : MonoBehaviour
         nm.SceneManager.OnSynchronizeComplete += OnSynchronizeComplete;
     }
 
-    // Called by the host
+    // Scene transitions initiated by the host
     public void OpenLobby() => LoadScene(lobbySceneName);
     public void StartTutorial()
     {
@@ -57,6 +58,7 @@ public class GameFlow : MonoBehaviour
     public void StartGame() => LoadScene(gameSceneName);
     public void ReturnToLobby() => LoadScene(lobbySceneName);
 
+    // Only the server loads network scenes and removes old game objects first
     private void LoadScene(string sceneName)
     {
         var nm = NetworkManager.Singleton;
@@ -81,7 +83,7 @@ public class GameFlow : MonoBehaviour
         }
     }
 
-    // Spawning players when the game scene is ready
+    // Spawn players and initialize the round after all clients finish loading
     private void OnLoadEventCompleted(string sceneName, LoadSceneMode mode,
         List<ulong> clientsCompleted, List<ulong> clientsTimedOut)
     {
@@ -95,7 +97,7 @@ public class GameFlow : MonoBehaviour
         GameManager.Instance.BeginRound();
     }
 
-    // A player who joins in the middle of a round
+    // Spawn and assign a role to a client who joins during an active round
     private void OnSynchronizeComplete(ulong clientId)
     {
         if (SceneManager.GetActiveScene().name != gameSceneName && SceneManager.GetActiveScene().name != tutorialSceneName) return;
@@ -105,6 +107,7 @@ public class GameFlow : MonoBehaviour
         PlayerRole.AssignUnused(player.GetComponent<PlayerRole>());
     }
 
+    // Create a player at the selected spawn point and give network ownership to its client
     private GameObject SpawnPlayer(ulong clientId, int index)
     {
         Vector3 pos = GameManager.Instance.GetSpawnPosition(index);

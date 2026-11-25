@@ -6,6 +6,7 @@ using UnityEngine.InputSystem;
 
 public static class GameSettings
 {
+    // UI and other systems can listen for setting changes
     public static event Action Changed;
 
     public const float DefaultMaster = 1f;
@@ -15,6 +16,7 @@ public static class GameSettings
     public const float DefaultSensitivity = 1f;
     public const float DefaultFov = 75f;
 
+    // PlayerPrefs keys used to store each setting
     private const string KMaster = "set.master", KMusic = "set.music", KSfx = "set.sfx", KVoice = "set.voice";
     private const string KSens = "set.sens", KFov = "set.fov";
 
@@ -25,6 +27,7 @@ public static class GameSettings
     private static bool pushToTalk;
     public const Key PushToTalkKey = Key.V;
 
+    // Getters load saved values on first access; setters clamp and save changes
     public static float MasterVolume
     {
         get { Load(); return master; }
@@ -67,6 +70,7 @@ public static class GameSettings
         set => SetBool(ref pushToTalk, KPtt, value);
     }
 
+    // Load settings and apply master volume before the first scene starts
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     private static void Init()
     {
@@ -74,6 +78,7 @@ public static class GameSettings
         AudioListener.volume = master;
     }
 
+    // Read saved settings once, ans use defaults when a setting hasnt been saved yet
     private static void Load()
     {
         if (loaded) return;
@@ -88,6 +93,7 @@ public static class GameSettings
         pushToTalk = PlayerPrefs.GetInt(KPtt, 0) == 1;
     }
 
+    // Store a changed value and notify systems that may need to update
     private static void SetFloat(ref float field, string key, float value)
     {
         Load();
@@ -104,6 +110,7 @@ public static class GameSettings
         Changed?.Invoke();
     }
 
+    // Flush pending PlayerPrefs changes to persistent storage
     public static void Save() => PlayerPrefs.Save();
 
     public static void ResetToDefaults()
@@ -118,6 +125,7 @@ public static class GameSettings
         Save();
     }
 
+    // Apply the saved voice level to Vivox when the service is available
     public static void ApplyVoice()
     {
         Load();

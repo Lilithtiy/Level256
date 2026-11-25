@@ -67,6 +67,7 @@ public class PlayerController : NetworkBehaviour
 
     private AudioListener audioListener;
 
+    // Sync crouching to everyone, but only let the owning player change it
     private readonly NetworkVariable<bool> isCrouching = new(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
 
     private CharacterController controller;
@@ -128,6 +129,7 @@ public class PlayerController : NetworkBehaviour
         if (visual != null && visual.gameObject.activeSelf != showVisual)
         visual.gameObject.SetActive(showVisual);
 
+        // Only the owning client reads input and controls this player
         if (!IsOwner) return;
 
         if (IsInLobby)
@@ -192,6 +194,7 @@ public class PlayerController : NetworkBehaviour
         }
     }
 
+    // Move the player to a new position and reset the CharacterControllers vertical motion
     public void TeleportTo(Vector3 position, float yaw)
     {
         if (!IsOwner) return;
@@ -209,6 +212,7 @@ public class PlayerController : NetworkBehaviour
         verticalVelocity = 0f;
     }
 
+    // The server uses this rpc to tell the owning client where to teleport
     [Rpc(SendTo.Owner)]
     public void TeleportOwnerRpc(Vector3 position, float yaw)
     {
@@ -217,6 +221,7 @@ public class PlayerController : NetworkBehaviour
 
     private void OnCrouchChanged(bool previous, bool current) => ApplyCrouch(current);
 
+    // Apply the crouch state to the collider, visual model, and camera
     private void ApplyCrouch(bool crouching)
     {
         float h = crouching ? crouchHeight : standHeight;
@@ -282,6 +287,7 @@ public class PlayerController : NetworkBehaviour
         verticalVelocity = 0f;
     }
 
+    // Catch sequence: face the ghost, show the red flash, then respawn if the game isn't over
     private IEnumerator CatchRoutine(Vector3 ghostPos, Vector3 respawnPos, bool gameOver)
     {
         isCaught = true;

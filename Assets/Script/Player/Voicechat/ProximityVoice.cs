@@ -22,6 +22,7 @@ public class ProximityVoice : MonoBehaviour
     {
         try
         {
+            // Give each session its own lobby and in-game voice channels
             lobbyChannel = "lobby_" + sessionCode;
             gameChannel = "voice_" + sessionCode;
             applied = null;
@@ -49,6 +50,8 @@ public class ProximityVoice : MonoBehaviour
         loggedIn = false;
         applied = null;
         localPlayer = null;
+
+        // Leave any voice channel when the player leaves the session.
         try { await VivoxService.Instance.LeaveAllChannelsAsync(); }
         catch (System.Exception e) { Debug.LogException(e); }
     }
@@ -60,6 +63,7 @@ public class ProximityVoice : MonoBehaviour
 
     private VoiceMode Wanted()
     {
+        // Use the lobby channel while the network lobby is active, otherwise it should use positional voice once the local player has spawned
         var lobby = LobbyManager.Instance;
         if (lobby != null && lobby.IsSpawned) return VoiceMode.Lobby;
 
@@ -75,6 +79,7 @@ public class ProximityVoice : MonoBehaviour
         applying = true;
         try
         {
+            // Leave the previous channel before joining the new one
             if (applied.HasValue)
             {
                 await VivoxService.Instance.LeaveAllChannelsAsync();
@@ -90,6 +95,7 @@ public class ProximityVoice : MonoBehaviour
             }
             else
             {
+                // Configure how in-game voice fades with distance
                 var voiceSettings = new Channel3DProperties(
                 15, // audibleDistance
                 5, // conversationalDistance
@@ -119,6 +125,7 @@ public class ProximityVoice : MonoBehaviour
     {
         if (!loggedIn) return;
 
+        // Periodically switch channels when the player moves between lobby and game
         if (!applying && Time.time >= retryAt && Time.time >= nextModeCheck)
         {
             nextModeCheck = Time.time + 0.5f;
@@ -126,7 +133,7 @@ public class ProximityVoice : MonoBehaviour
             if (applied != wanted) _ = Apply(wanted);
         }
 
-        // The mic is muted if you muted it manually, or if push to talk is on and the key isn't held
+        // Apply manual mute and push-to-talk settings to the microphone
         var kb = Keyboard.current;
         bool holding = kb != null && kb[GameSettings.PushToTalkKey].isPressed;
         bool wantMuted = IsMuted || (GameSettings.PushToTalk && !holding);
@@ -138,6 +145,7 @@ public class ProximityVoice : MonoBehaviour
             else VivoxService.Instance.UnmuteInputDevice();
         }
 
+        // Update the local player's position so Vivox can spatialize game voice
         if (applied != VoiceMode.Game || Time.time < nextPosUpdate) return;
         nextPosUpdate = Time.time + 0.3f;
 

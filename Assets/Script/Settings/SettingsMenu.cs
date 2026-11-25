@@ -8,6 +8,7 @@ using UnityEngine.UIElements;
 [RequireComponent(typeof(UIDocument))]
 public class SettingsMenu : MonoBehaviour
 {
+    // Keeps one persistent settings menu available across scenes
     public static SettingsMenu Instance { get; private set; }
     public static bool IsOpen => Instance != null && Instance.open;
 
@@ -20,6 +21,7 @@ public class SettingsMenu : MonoBehaviour
     private static readonly Color Dim = new Color(1f, 1f, 1f, 0.45f);
 
     private VisualElement overlay;
+    // Callbacks used to refresh UI controls from the current settings
     private readonly List<Action> refreshers = new();
     private PlayerController lockedPlayer;
     private bool open;
@@ -55,6 +57,7 @@ public class SettingsMenu : MonoBehaviour
 
     private void LateUpdate()
     {
+        // Remember whether a task panel was open, so Escape doesn't open settings over it
         panelWasOpen = TaskPanelHost.Instance != null && TaskPanelHost.Instance.Open != null;
     }
 
@@ -74,6 +77,7 @@ public class SettingsMenu : MonoBehaviour
         foreach (var refresh in refreshers) refresh();
         overlay.style.display = DisplayStyle.Flex;
 
+        // Lock the local player's controls while the menu is open
         var nm = NetworkManager.Singleton;
         if (nm != null && nm.IsListening && nm.LocalClient != null && nm.LocalClient.PlayerObject != null &&
             nm.LocalClient.PlayerObject.TryGetComponent(out lockedPlayer))
@@ -213,12 +217,14 @@ public class SettingsMenu : MonoBehaviour
         value.style.unityTextAlign = TextAnchor.MiddleRight;
         row.Add(value);
 
+        // Update the setting and displayed value whenever the slider changes
         slider.RegisterValueChangedCallback(e =>
         {
             set(e.newValue);
             value.text = format(e.newValue);
         });
 
+        // Refresh the slider and label when opening the menu or resetting settings
         refreshers.Add(() =>
         {
             float current = get();
