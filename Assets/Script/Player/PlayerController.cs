@@ -77,23 +77,6 @@ public class PlayerController : NetworkBehaviour
 
     public bool IsCrouching => isCrouching.Value;
 
-    public void TeleportTo(Vector3 position, float yaw)
-    {
-        if (!IsOwner) return;
-
-        Quaternion rotation = Quaternion.Euler(0f, yaw, 0f);
-
-        controller.enabled = false;
-
-        if (TryGetComponent(out NetworkTransform networkTransform))
-            networkTransform.Teleport(position, rotation, transform.localScale);
-        else
-            transform.SetPositionAndRotation(position, rotation);
-
-        controller.enabled = true;
-        verticalVelocity = 0f;
-    }
-
     private void Awake()
     {
         controller = GetComponent<CharacterController>();
@@ -207,6 +190,29 @@ public class PlayerController : NetworkBehaviour
             lookInput = lookAction.action.ReadValue<Vector2>();
             Look();
         }
+    }
+
+    public void TeleportTo(Vector3 position, float yaw)
+    {
+        if (!IsOwner) return;
+
+        Quaternion rotation = Quaternion.Euler(0f, yaw, 0f);
+
+        controller.enabled = false;
+
+        if (TryGetComponent(out NetworkTransform networkTransform))
+            networkTransform.Teleport(position, rotation, transform.localScale);
+        else
+            transform.SetPositionAndRotation(position, rotation);
+
+        controller.enabled = true;
+        verticalVelocity = 0f;
+    }
+
+    [Rpc(SendTo.Owner)]
+    public void TeleportOwnerRpc(Vector3 position, float yaw)
+    {
+        TeleportTo(position, yaw);
     }
 
     private void OnCrouchChanged(bool previous, bool current) => ApplyCrouch(current);

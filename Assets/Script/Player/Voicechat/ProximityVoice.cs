@@ -80,13 +80,25 @@ public class ProximityVoice : MonoBehaviour
                 await VivoxService.Instance.LeaveAllChannelsAsync();
                 applied = null;
             }
+
             localPlayer = null;
 
             if (target == VoiceMode.Lobby)
-                await VivoxService.Instance.JoinGroupChannelAsync(lobbyChannel, ChatCapability.AudioOnly);
+            {
+                await VivoxService.Instance.JoinGroupChannelAsync(
+                    lobbyChannel, ChatCapability.AudioOnly);
+            }
             else
-                await VivoxService.Instance.JoinPositionalChannelAsync(
-                    gameChannel, ChatCapability.AudioOnly, new Channel3DProperties());
+            {
+                var voiceSettings = new Channel3DProperties(
+                15, // audibleDistance
+                5, // conversationalDistance
+                1.5f, // audioFadeIntensityByDistance
+                AudioFadeModel.ExponentialByDistance
+            );
+
+            await VivoxService.Instance.JoinPositionalChannelAsync(gameChannel, ChatCapability.AudioOnly, voiceSettings);
+            }
 
             applied = target;
             Debug.Log($"Voice mode: {target}");
@@ -97,7 +109,10 @@ public class ProximityVoice : MonoBehaviour
             applied = null;
             retryAt = Time.time + 2f;
         }
-        finally { applying = false; }
+        finally
+        {
+            applying = false;
+        }
     }
 
     private void Update()

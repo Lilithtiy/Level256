@@ -16,15 +16,14 @@ public static class GameSettings
     public const float DefaultFov = 75f;
 
     private const string KMaster = "set.master", KMusic = "set.music", KSfx = "set.sfx", KVoice = "set.voice";
-    private const string KSens = "set.sens", KFov = "set.fov", KFullscreen = "set.fullscreen", KVsync = "set.vsync";
+    private const string KSens = "set.sens", KFov = "set.fov";
 
     private static bool loaded;
     private static float master, music, sfx, voice, sens, fov;
-    private static bool fullscreen, vsync;
 
     private const string KPtt = "set.ptt";
     private static bool pushToTalk;
-    public const Key PushToTalkKey = Key.V; // Change this one line if you want another key
+    public const Key PushToTalkKey = Key.V;
 
     public static float MasterVolume
     {
@@ -62,18 +61,6 @@ public static class GameSettings
         set => SetFloat(ref fov, KFov, Mathf.Clamp(value, 60f, 100f));
     }
 
-    public static bool Fullscreen
-    {
-        get { Load(); return fullscreen; }
-        set { SetBool(ref fullscreen, KFullscreen, value); ApplyDisplay(); }
-    }
-
-    public static bool VSync
-    {
-        get { Load(); return vsync; }
-        set { SetBool(ref vsync, KVsync, value); ApplyDisplay(); }
-    }
-
     public static bool PushToTalk
     {
         get { Load(); return pushToTalk; }
@@ -85,7 +72,6 @@ public static class GameSettings
     {
         Load();
         AudioListener.volume = master;
-        ApplyDisplay();
     }
 
     private static void Load()
@@ -100,8 +86,6 @@ public static class GameSettings
         sens = PlayerPrefs.GetFloat(KSens, DefaultSensitivity);
         fov = PlayerPrefs.GetFloat(KFov, DefaultFov);
         pushToTalk = PlayerPrefs.GetInt(KPtt, 0) == 1;
-        fullscreen = PlayerPrefs.GetInt(KFullscreen, 1) == 1;
-        vsync = PlayerPrefs.GetInt(KVsync, 1) == 1;
     }
 
     private static void SetFloat(ref float field, string key, float value)
@@ -131,17 +115,8 @@ public static class GameSettings
         MouseSensitivity = DefaultSensitivity;
         Fov = DefaultFov;
         PushToTalk = false;
-        Fullscreen = true;
-        VSync = true;
         Save();
     }
-
-    private static void ApplyDisplay()
-    {
-        Screen.fullScreenMode = fullscreen ? FullScreenMode.FullScreenWindow : FullScreenMode.Windowed;
-        QualitySettings.vSyncCount = vsync ? 1 : 0;
-    }
-
 
     public static void ApplyVoice()
     {

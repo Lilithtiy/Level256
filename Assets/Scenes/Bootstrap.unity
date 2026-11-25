@@ -506,11 +506,22 @@ MonoBehaviour:
     - Saga
   - heading: MUSIC & SOUND
     lines:
-    - Your Mom / yourmom.com
+    - 'Horror Ambience by Robster881 | License: Creative Commons 0'
+    - 'Looppelganger #245 | Dark Ambient Sound by looplicator | License: Creative
+      Commons 0'
+    - 'Horror Chase (Loop) by SuperGamerSVK | License: Creative Commons 0'
+    - 'Send message by ElGamer7876 | License: Creative Commons 0'
+    - '8-Bit Menu Select by Qvantor | License: Creative Commons 0'
+    - '8-bit FX_Death 2 by CAT-FOX_ALEX | License: Creative Commons 0'
+    - '8-Bit Level Complete by Qvantor | License: Creative Commons 0'
+    - 'Coin Pickup.mp3 by Phenala | License: Creative Commons 0'
+    - 'Videogame Death Sound by Fupicat | License: Creative Commons 0'
+    - '8-Bit Powerup - Get Something BIG! by TheDweebMan | License: Creative Commons
+      0'
+    - '8-Bit Wrong 2 by TheDweebMan | License: Creative Commons 0'
   - heading: SPECIAL THANKS
     lines:
     - Playtesters
-    - Your mom
 --- !u!1 &722885078
 GameObject:
   m_ObjectHideFlags: 0

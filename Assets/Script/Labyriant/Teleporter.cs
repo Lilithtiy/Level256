@@ -1,10 +1,11 @@
 using System.Collections;
+using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
 public class Teleporter : NetworkBehaviour
 {
-    [Header("Link")]
+    [Header("Link")] 
     [SerializeField] private Teleporter partner;
     [Tooltip("Where a player appears when they arrive here. Empty = the pad itself")]
     [SerializeField] private Transform arrivalPoint;
@@ -30,6 +31,8 @@ public class Teleporter : NetworkBehaviour
     private static Teleporter arrivalBlock;
     private static float nextUseTime;
 
+    private readonly Dictionary<ulong, float> serverNextUse = new();
+
     private bool pulsing;
     private bool hasColor;
     private Color shownColor;
@@ -37,6 +40,13 @@ public class Teleporter : NetworkBehaviour
 
     private Vector3 ArrivalPosition => arrivalPoint != null ? arrivalPoint.position : transform.position;
     private float ArrivalYaw => arrivalPoint != null ? arrivalPoint.eulerAngles.y : transform.eulerAngles.y;
+
+    private void Use()
+    {
+        nextUseTime = Time.time + cooldown;
+        arrivalBlock = partner;
+        RequestUseRpc();
+    }
 
     private void Awake()
     {
@@ -65,55 +75,32 @@ public class Teleporter : NetworkBehaviour
     {
         if (!IsSpawned) return;
 
-        if (!pulsing) SetColor(IsUnlocked ? readyColor : lockedColor);
+        if (!pulsing)
+            SetColor(IsUnlocked ? readyColor : lockedColor);
 
-        // Only the local player is checked, each machine moves its own player
         var local = NetworkManager.Singleton.LocalClient?.PlayerObject;
         if (local == null) return;
 
         bool inside = IsInside(local.transform.position);
 
-        // Stepping off the pad you arrived at rearms it
         if (arrivalBlock == this)
         {
             if (!inside) arrivalBlock = null;
             return;
         }
 
-        if (!inside || exitOnly || partner == null || !IsUnlocked || Time.time < nextUseTime) return;
+        if (!inside || exitOnly || partner == null || !IsUnlocked || Time.time < nextUseTime)
+            return;
 
         var gm = GameManager.Instance;
-        if (gm == null || gm.State.Value != GameState.Playing) return;
+        if (gm == null || gm.State.Value != GameState.Playing)
+            return;
 
         var player = local.GetComponent<PlayerController>();
-        if (player == null || player.IsCaught) return;
+        if (player == null || player.IsCaught)
+            return;
 
-        Use(player);
-    }
-
-    private void Use(PlayerController player)
-    {
-        nextUseTime = Time.time + cooldown;
-        arrivalBlock = partner;
-
-        player.TeleportTo(partner.ArrivalPosition, partner.ArrivalYaw);
-        ReportUseRpc();
-    }
-
-    // The host makes the noise and tells everyone to flash both pads
-    [Rpc(SendTo.Server)]
-    private void ReportUseRpc()
-    {
-        if (partner == null) return;
-
-        if (NoiseTracker.Instance != null)
-        {
-            NoiseTracker.Instance.EmitNoise(transform.position, noiseRadius, noiseSeconds);
-            NoiseTracker.Instance.EmitNoise(partner.transform.position, noiseRadius, noiseSeconds);
-        }
-
-        PulseRpc();
-        partner.PulseRpc();
+        Use();
     }
 
     [Rpc(SendTo.Everyone)]
@@ -142,5 +129,35 @@ public class Teleporter : NetworkBehaviour
 
         foreach (var r in padRenderers)
             if (r != null) r.material.color = c;
+    }
+
+    [Rpc(SendTo.Server, RequireOwnership = false)]
+    private void RequestUseRpc(RpcParams rpcParams = default)
+    {
+        var nm = NetworkManager.Singleton;
+        if (nm == null || !nm.IsServer || partner == null || exitOnly || !IsUnlocked)
+            return;
+
+        ulong clientId = rpcParams.Receive.SenderClientId;
+        if (!nm.ConnectedClients.TryGetValue(clientId, out var client) ||
+            client.PlayerObject == null ||
+            !IsInside(client.PlayerObject.transform.position))
+            return;
+
+        var gm = GameManager.Instance;
+        if (gm == null || gm.State.Value != GameState.Playing)
+            return;
+
+        if (serverNextUse.TryGetValue(clientId, out float until) && Time.time < until)
+            return;
+
+        serverNextUse[clientId] = Time.time + cooldown;
+
+        var player = client.PlayerObject.GetComponent<PlayerController>();
+        if (player == null)
+            return;
+
+        player.TeleportOwnerRpc(partner.ArrivalPosition, partner.ArrivalYaw);
+
     }
 }

@@ -233,7 +233,7 @@ MonoBehaviour:
   wallMuffle: 0.5
   investigateSeconds: 6
   searchRadius: 5
-  speed: 3
+  speed: 4
   wanderRadius: 10
   repathInterval: 0.25
   catchDistance: 1.8

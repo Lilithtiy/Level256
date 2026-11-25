@@ -149,10 +149,6 @@ public class SettingsMenu : MonoBehaviour
         AddSlider(panel, "Mouse sensitivity", 0.2f, 3f, () => GameSettings.MouseSensitivity, v => GameSettings.MouseSensitivity = v, v => v.ToString("0.0"));
         AddSlider(panel, "Field of view", 60f, 100f, () => GameSettings.Fov, v => GameSettings.Fov = v, v => $"{Mathf.RoundToInt(v)}°");
 
-        Header(panel, "VIDEO");
-        AddToggle(panel, "Fullscreen", () => GameSettings.Fullscreen, v => GameSettings.Fullscreen = v);
-        AddToggle(panel, "VSync", () => GameSettings.VSync, v => GameSettings.VSync = v);
-
         var buttons = new VisualElement();
         buttons.style.flexDirection = FlexDirection.Row;
         buttons.style.justifyContent = Justify.SpaceBetween;
