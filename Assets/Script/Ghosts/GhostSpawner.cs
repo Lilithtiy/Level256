@@ -29,6 +29,7 @@ public class GhostSpawner : MonoBehaviour
         spawned = new bool[ghosts.Length];
     }
 
+    // Reset spawn tracking and spawn any ghosts due at the start of the round
     public void StartRound()
     {
         spawned = new bool[ghosts.Length];
@@ -40,6 +41,7 @@ public class GhostSpawner : MonoBehaviour
     {
         if (!roundActive) return;
 
+        // Only the server controls networked ghost spawning
         var nm = NetworkManager.Singleton;
         if (nm == null || !nm.IsServer) return;
 
@@ -51,6 +53,7 @@ public class GhostSpawner : MonoBehaviour
         SpawnDue(objectives.Progress.Value);
     }
 
+    // Spawn each ghost once its configured objective progress threshold is reached
     private void SpawnDue(float progress)
     {
         for (int i = 0; i < ghosts.Length; i++)
@@ -70,6 +73,7 @@ public class GhostSpawner : MonoBehaviour
             return;
         }
 
+        // Avoid spawning near players when another spawn point is farther away
         Transform point = g.point;
         if (PlayerWithin(point.position, minSpawnDistance))
         {
@@ -134,6 +138,7 @@ public class GhostSpawner : MonoBehaviour
         Debug.Log($"GhostSpawner: Respawned ghost at {spawnPosition}");
     }
 
+    // Choose the spawn point whose nearest player is farthest away
     private Transform FindFurthestSpawnPoint()
     {
         Transform bestPoint = null;

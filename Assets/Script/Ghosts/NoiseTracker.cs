@@ -6,12 +6,14 @@ public class NoiseTracker : MonoBehaviour
 {
     public static NoiseTracker Instance { get; private set; }
 
+    // A noise event available for ghosts to investigate
     public struct Noise
     {
         public Vector3 position;
         public float radius;
     }
 
+    // Noise event with an expiration time, used for temporary sound
     private struct TimedNoise
     {
         public Vector3 position;
@@ -30,6 +32,7 @@ public class NoiseTracker : MonoBehaviour
 
     public readonly List<Noise> Noises = new();
 
+    // Track player movement between frames to estimate footstep noise
     private readonly Dictionary<ulong, Vector3> lastPositions = new();
     private readonly Dictionary<ulong, float> smoothedSpeeds = new();
 
@@ -45,6 +48,7 @@ public class NoiseTracker : MonoBehaviour
     {
         Noises.Clear();
 
+        // The server tracks movement and builds the shared list of noise events
         var nm = NetworkManager.Singleton;
         if (nm == null || !nm.IsServer) return;
 
@@ -66,6 +70,7 @@ public class NoiseTracker : MonoBehaviour
             }
             lastPositions[client.ClientId] = pos;
 
+            // Smooth speed changes to prevent footstep noise from rapidly switching
             smoothedSpeeds.TryGetValue(client.ClientId, out float previous);
             speed = Mathf.Lerp(previous, speed, 10f * Time.deltaTime);
             smoothedSpeeds[client.ClientId] = speed;
@@ -79,6 +84,7 @@ public class NoiseTracker : MonoBehaviour
             if (radius > 0f)
                 Noises.Add(new Noise { position = pos, radius = radius });
         }
+        // Add temporary sounds and remove them after they expire
         for (int i = external.Count - 1; i >= 0; i--)
         {
             if (Time.time >= external[i].expiresAt)
@@ -95,6 +101,7 @@ public class NoiseTracker : MonoBehaviour
     {
         float expires = Time.time + seconds;
 
+        // Merge sounds emitted at nearly the same position
         for (int i = 0; i < external.Count; i++)
         {
             if ((external[i].position - position).sqrMagnitude >= 0.01f) continue;

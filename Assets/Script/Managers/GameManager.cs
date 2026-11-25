@@ -14,30 +14,20 @@ public class GameManager : NetworkBehaviour
     [SerializeField] private Transform[] respawnPoints;
     [SerializeField] private float spawnHeight = 1.3f;
 
-    public NetworkVariable<int> Lives = new(
-        3,
-        NetworkVariableReadPermission.Everyone,
-        NetworkVariableWritePermission.Server);
+    // Server-owned round state, synchronized to all clients
+    public NetworkVariable<int> Lives = new(3, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
-    public NetworkVariable<GameState> State = new(
-        GameState.Playing,
-        NetworkVariableReadPermission.Everyone,
-        NetworkVariableWritePermission.Server);
+    public NetworkVariable<GameState> State = new(GameState.Playing, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
-    public NetworkVariable<GhostState> ghostState = new(
-        GhostState.Normal,
-        NetworkVariableReadPermission.Everyone,
-        NetworkVariableWritePermission.Server);
+    public NetworkVariable<GhostState> ghostState = new(GhostState.Normal, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
     [SerializeField] private float ghostExposedDuration = 10f;
-    public NetworkVariable<float> ghostExposedTimer = new(
-        0f, 
-        NetworkVariableReadPermission.Everyone, 
-        NetworkVariableWritePermission.Server);
+    public NetworkVariable<float> ghostExposedTimer = new(0f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
     public event System.Action OnRoundStarted;
     public event System.Action<ulong> OnPlayerCaught;
 
+    // Tracks when each caught player can next be caught
     private readonly Dictionary<ulong, float> safeUntil = new();
 
     private void Awake()
@@ -45,6 +35,7 @@ public class GameManager : NetworkBehaviour
         Instance = this;
     }
 
+    // Reset round state and start the rounds ghosts and tasks
     public void BeginRound()
     {
         if (!IsServer) return;
@@ -65,6 +56,7 @@ public class GameManager : NetworkBehaviour
              TaskManager.Instance.SetupRound();
     }
 
+    // Handle a catch on the server, update lives, and tell the player to respawn
     public bool TryCatchPlayer(ulong clientId, Vector3 ghostPosition)
     {
         if (!IsServer || State.Value != GameState.Playing || Lives.Value <= 0) return false;
@@ -89,6 +81,7 @@ public class GameManager : NetworkBehaviour
         return true;
     }
 
+    // Select a spawn position using the requested index
     public Vector3 GetSpawnPosition(int index)
     {
         return respawnPoints.Length > 0 ? respawnPoints[index % respawnPoints.Length].position + Vector3.up * spawnHeight : Vector3.zero;
@@ -99,6 +92,7 @@ public class GameManager : NetworkBehaviour
         return respawnPoints.Length > 0 ? respawnPoints[Random.Range(0, respawnPoints.Length)].position + Vector3.up * spawnHeight : Vector3.zero;
     }
 
+    // The server ends the round when the exit objective is completed
     public void Win()
     {
         if (!IsServer || State.Value != GameState.Playing) return;
@@ -146,6 +140,7 @@ public class GameManager : NetworkBehaviour
         AudioManager.audioManagerInstance?.PlayMusic(AudioManager.MusicState.Lobby);
     }
 
+    // Put ghosts into the exposed state and start its countdown
     public void ActivateGhostExposedState()
     {
         if (!IsServer) return;
@@ -154,6 +149,7 @@ public class GameManager : NetworkBehaviour
         ghostExposedTimer.Value = ghostExposedDuration;
     }
 
+    // Count down the exposed period on the server, then restore normal ghost behavior
     private void FixedUpdate()
     {
         if (ghostExposedTimer.Value > 0 && ghostState.Value == GhostState.Exposed)

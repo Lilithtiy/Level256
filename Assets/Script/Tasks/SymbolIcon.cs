@@ -10,6 +10,7 @@ public class SymbolIcon : VisualElement
 
     public SymbolIcon(int shape, float size)
     {
+        // Wrap the shape index so it always selects one of the supported shapes
         this.shape = Mathf.Abs(shape) % ShapeCount;
         this.size = size;
 
@@ -19,6 +20,7 @@ public class SymbolIcon : VisualElement
         generateVisualContent += Draw;
     }
 
+    // Add the icon centered over its parent elemen
     public static SymbolIcon Overlay(VisualElement parent, int shape, float size)
     {
         var icon = new SymbolIcon(shape, size);
@@ -31,6 +33,7 @@ public class SymbolIcon : VisualElement
         return icon;
     }
 
+    // Draw the selected shape using  uitoolkits 2D painter
     private void Draw(MeshGenerationContext ctx)
     {
         var p = ctx.painter2D;

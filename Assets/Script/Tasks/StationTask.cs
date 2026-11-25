@@ -7,6 +7,7 @@ public enum TaskMode { Hold, Panel, Press }
 
 public abstract class StationTask : NetworkBehaviour
 {
+    // Active tasks, used by managers and HUDs to find them
     public static readonly List<StationTask> All = new();
 
     [Header("Task")]
@@ -22,6 +23,7 @@ public abstract class StationTask : NetworkBehaviour
     [Header("Panel")]
     [SerializeField] private VisualTreeAsset panelAsset;
 
+    // Server-owned task state synchronized with clients
     public NetworkVariable<float> Progress = new(0f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     public NetworkVariable<bool> IsDone = new(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     public NetworkVariable<bool> IsActive = new(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
@@ -36,12 +38,12 @@ public abstract class StationTask : NetworkBehaviour
 
     public virtual int MinPlayers => 1;
 
-    public virtual string HoldLabel =>
-        MinPlayers > 1 ? $"{taskName}   {Workers.Value}/{MinPlayers} players" : taskName;
+    public virtual string HoldLabel => MinPlayers > 1 ? $"{taskName}   {Workers.Value}/{MinPlayers} players" : taskName;
     public virtual string HudDetail => "";
 
     protected float MaxDistance => maxDistance;
 
+    // Track participating players on the server
     private readonly List<ulong> workers = new();
     protected IReadOnlyList<ulong> WorkerIds => workers;
     protected int WorkerCount => workers.Count;
@@ -81,7 +83,7 @@ public abstract class StationTask : NetworkBehaviour
 
     protected void Say(string text, bool good = false, float seconds = 1.5f) => TaskPanelHost.Instance?.ShowStatus(text, good, seconds);
 
-    // RPCs
+    // Client requests are validated and applied by the server
     [Rpc(SendTo.Server)]
     public void SetWorkingRpc(bool working, RpcParams rpcParams = default)
     {
@@ -131,10 +133,8 @@ public abstract class StationTask : NetworkBehaviour
 
     protected virtual void EmitWorkNoise(float radius, float seconds) => EmitAlarm(radius, seconds);
 
-    // Server logic
-    protected bool CanWork =>
-        IsActive.Value && !IsDone.Value &&
-        GameManager.Instance != null && GameManager.Instance.State.Value == GameState.Playing;
+    // A task can be worked on only while active, unfinished, and the game is playing
+    protected bool CanWork => IsActive.Value && !IsDone.Value && GameManager.Instance != null && GameManager.Instance.State.Value == GameState.Playing;
 
     protected bool IsWorker(ulong clientId) => workers.Contains(clientId);
 
@@ -167,6 +167,7 @@ public abstract class StationTask : NetworkBehaviour
 
     private void Update()
     {
+        // Only the server advances task logic and validates worker proximity
         if (!IsServer || !IsActive.Value || IsDone.Value) return;
 
         if (workers.Count == 0)
@@ -195,6 +196,7 @@ public abstract class StationTask : NetworkBehaviour
 
     protected virtual void ServerIdle(float deltaTime) { }
 
+    // Mark the task complete once its progress reaches the target
     protected void CheckDone()
     {
         if (IsDone.Value || Progress.Value < 0.999f) return;
@@ -213,6 +215,7 @@ public abstract class StationTask : NetworkBehaviour
         CheckDone();
     }
 
+    // Reset task state and let subclasses initialize round-specific data
     public void ServerSetup(bool active)
     {
         ClearWorkers();

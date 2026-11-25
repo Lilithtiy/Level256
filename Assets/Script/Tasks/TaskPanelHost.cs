@@ -35,6 +35,7 @@ public class TaskPanelHost : MonoBehaviour
 
     private void Update()
     {
+        // Let the open task update its panel, and clear messages after their timeout
         if (Open != null) Open.TickPanel();
 
         if (statusUntil > 0f && Time.time >= statusUntil)
@@ -62,7 +63,7 @@ public class TaskPanelHost : MonoBehaviour
 
     public void HideHold() => hold.style.display = DisplayStyle.None;
 
-    // panel
+    // Instantiate and bind the selected tasks ui panel
     public bool OpenPanel(StationTask task)
     {
         if (task.PanelAsset == null)
@@ -84,6 +85,7 @@ public class TaskPanelHost : MonoBehaviour
         return true;
     }
 
+    // Unbind and clear the current panel
     public void ClosePanel()
     {
         if (Open != null) Open.UnbindPanel();

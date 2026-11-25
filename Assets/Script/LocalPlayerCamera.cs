@@ -13,7 +13,7 @@ public class LocalPlayerCamera : NetworkBehaviour
         if (playerCamera == null)
             return;
 
-        playerCamera.enabled = IsOwner;
+        playerCamera.enabled = IsOwner; // Only enable the camera for the player who owns this network object
 
         if (IsOwner)
         {

@@ -17,6 +17,7 @@ public class WireCanvas : VisualElement
         generateVisualContent += Draw;
     }
 
+    // Draw curved wires between the centers of their connected elements
     private void Draw(MeshGenerationContext ctx)
     {
         var p = ctx.painter2D;
@@ -39,5 +40,6 @@ public class WireCanvas : VisualElement
         }
     }
 
+    // Convert an element's world-space center to this canvas's local coordinates
     private Vector2 Center(VisualElement e) => this.WorldToLocal(e.worldBound.center);
 }

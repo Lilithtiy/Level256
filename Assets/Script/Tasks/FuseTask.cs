@@ -17,6 +17,7 @@ public class FuseTask : StationTask
     [SerializeField] private GameObject heldPrefab;
     [SerializeField] private Vector3 heldOffset = new Vector3(0.3f, 1.1f, 0.5f);
 
+    // Server-owned state shared with clients
     public NetworkVariable<ulong> CarrierId = new(None, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     public NetworkVariable<int> SpotIndex = new(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
@@ -37,7 +38,7 @@ public class FuseTask : StationTask
     private ulong heldFor = None;
     private float nextNoise;
 
-    // helpers
+    // Use the selected spawn spot, or fall back to the fuse object if no spots are se
     private Transform FuseSpot
     {
         get
@@ -56,8 +57,8 @@ public class FuseTask : StationTask
         return offset.magnitude <= MaxDistance;
     }
 
-    public override bool InRange(Vector3 position)
-        => Near(fuseBox, position) || (CarrierId.Value == None && Near(FuseSpot, position));
+    // Players can interact near the fuse box or, while unclaimed, near the fuse
+    public override bool InRange(Vector3 position) => Near(fuseBox, position) || (CarrierId.Value == None && Near(FuseSpot, position));
 
     public override string PromptAt(Vector3 point)
     {
@@ -71,13 +72,14 @@ public class FuseTask : StationTask
         return "Waiting for your teammate to bring the fuse";
     }
 
-    // server
+    // Server chooses a fuse location and resets its carrier at round start
     protected override void OnRoundSetup()
     {
         CarrierId.Value = None;
         SpotIndex.Value = fuseSpots != null && fuseSpots.Length > 0 ? Random.Range(0, fuseSpots.Length) : 0;
     }
 
+    // Server handles pickup and insertion after validating the player's position
     protected override void OnInteract(ulong clientId)
     {
         var nm = NetworkManager.Singleton;
@@ -100,6 +102,7 @@ public class FuseTask : StationTask
         }
     }
 
+    // Drop the fuse if its carrier disconnects; otherwise emit noise while it is being carried
     protected override void ServerIdle(float deltaTime)
     {
         if (CarrierId.Value == None) return;
@@ -127,7 +130,7 @@ public class FuseTask : StationTask
         if (!IsDone.Value) Progress.Value = 0f;
     }
 
-    // client visuals
+    // Subscribe to state changes and update the fuse visuals on each client
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
@@ -202,7 +205,7 @@ public class FuseTask : StationTask
 
         held = Instantiate(source);
 
-        // The held copy must not block the interact ray or show up on the map
+        // Disable interaction and map markers on the visual-only copy
         foreach (var c in held.GetComponentsInChildren<Collider>(true)) c.enabled = false;
         foreach (var m in held.GetComponentsInChildren<MarkerTarget>(true))
         {
@@ -216,6 +219,7 @@ public class FuseTask : StationTask
         held.transform.localRotation = Quaternion.identity;
     }
 
+    // See in the scene, its shows interaction ranges in the while this task is selected
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.yellow;

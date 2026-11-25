@@ -24,6 +24,7 @@ public class CreditsMenu : MonoBehaviour
     [SerializeField] private float scrollSpeed = 40f;
     [SerializeField] private ScriptableAudio clickAudio;
 
+    // Credit sections and names configured in the Inspector
     [SerializeField]
     private List<Section> sections = new()
     {
@@ -65,6 +66,7 @@ public class CreditsMenu : MonoBehaviour
             return;
         }
 
+        // Auto-scroll unless paused by opening the menu or manual scrolling
         if (autoScroll && scroll != null && Time.unscaledTime >= pauseUntil)
             scroll.verticalScroller.value += scrollSpeed * Time.unscaledDeltaTime;
     }
@@ -93,6 +95,7 @@ public class CreditsMenu : MonoBehaviour
             AudioManager.audioManagerInstance.PlayLocal(clickAudio);
     }
 
+    // Find the credits UI, configure it, and connect its controls
     private bool TryBind()
     {
         if (root != null && root.panel != null) return true;
@@ -112,13 +115,14 @@ public class CreditsMenu : MonoBehaviour
 
         scroll = root.Q<ScrollView>("credits-scroll");
         scroll.RegisterCallback<WheelEvent>(_ => pauseUntil = Time.unscaledTime + 3f); // manual scrolling pauses auto-scroll
+        // Pause auto-scroll during manual scrolling
         root.Q<Button>("credits-back").clicked += () => { Click(); Close(); };
 
         BuildList();
         return true;
     }
 
-    // The names come from the Inspector list
+    // Populate the scroll view from the Inspector-configured sections
     private void BuildList()
     {
         scroll.Clear();

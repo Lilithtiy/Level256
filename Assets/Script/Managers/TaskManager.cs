@@ -10,12 +10,13 @@ public class TaskManager : NetworkBehaviour
     [SerializeField] private int tasksPerRound = 5;
     [SerializeField] private bool guaranteeTeamTask = true;
 
+    // Server-owned task totals synchronized with all clients
     public NetworkVariable<int> Completed = new(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     public NetworkVariable<int> Total = new(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
     [SerializeField] private ScriptableAudio taskCompletedAudio;
 
-    // SERVER ONLY. The exit (and the energy bar) can listen to this.
+    // Server-side event used by objective systems when all tasks are complete
     public event System.Action OnAllTasksCompleted;
 
     private void Awake() => Instance = this;
@@ -24,6 +25,7 @@ public class TaskManager : NetworkBehaviour
 
     private void Update()
     {
+        // Periodically deactivate team tasks that can no longer be completed
         if (!IsServer || !IsSpawned || Time.time < nextCheck) return;
         nextCheck = Time.time + 1f;
 
@@ -40,12 +42,13 @@ public class TaskManager : NetworkBehaviour
             Debug.Log($"{t.TaskName} dropped: needs {t.MinPlayers} players, {players} left");
         }
 
-        // If that was the last unfinished task, the exit logic must hear about it
+        // Notify listeners if dropping tasks means all remaining tasks are complete
         if (dropped && Total.Value > 0 && Completed.Value >= Total.Value)
             OnAllTasksCompleted?.Invoke();
     }
 
 
+    // Randomly select the round's active tasks, respecting player requirements
     public void SetupRound()
     {
         if (!IsServer) return;
@@ -53,12 +56,14 @@ public class TaskManager : NetworkBehaviour
         int players = NetworkManager.Singleton.ConnectedClientsList.Count;
         var all = new List<StationTask>(FindObjectsByType<StationTask>(FindObjectsSortMode.None));
 
+        // Shuffle tasks so the active selection varies between rounds
         for (int i = all.Count - 1; i > 0; i--)
         {
             int j = Random.Range(0, i + 1);
             (all[i], all[j]) = (all[j], all[i]);
         }
 
+        // Move a suitable team task to the front so it is selected this round
         if (guaranteeTeamTask && players >= 2)
         {
             int team = all.FindIndex(t => t.MinPlayers > 1 && t.MinPlayers <= players);
@@ -78,6 +83,7 @@ public class TaskManager : NetworkBehaviour
         Debug.Log($"Round tasks: {active} active out of {all.Count} ({players} players)");
     }
 
+    // Record a completed task and notify listeners when the rounds tasks are done
     public void TaskCompleted(StationTask task)
     {
         if (!IsServer) return;

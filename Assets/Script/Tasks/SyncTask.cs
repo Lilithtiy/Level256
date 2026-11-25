@@ -10,6 +10,7 @@ public class SyncTask : CodeTask
     private static readonly int[] Pow10 = { 1000, 100, 10, 1 };
     private const ulong None = ulong.MaxValue;
 
+    // Server-generated puzzle data and the two assigned player roles
     public NetworkVariable<int> Legend = new(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     public NetworkVariable<ulong> ReaderId = new(None, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     public NetworkVariable<ulong> OperatorId = new(None, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
@@ -20,9 +21,10 @@ public class SyncTask : CodeTask
 
     public override string HudDetail => $"{Mathf.Min(Workers.Value, 2)}/2 AT PANEL";
 
+    // Read one digit from a four-digit value by position
     private static int Digit(int value, int pos) => value / Pow10[pos] % 10;
 
-    // server
+    // Server creates a shuffled color legend and a random code for each round
     protected override void OnRoundSetup()
     {
         var colors = new List<int> { 0, 1, 2, 3 };
@@ -33,7 +35,7 @@ public class SyncTask : CodeTask
         }
         Legend.Value = colors[0] * 1000 + colors[1] * 100 + colors[2] * 10 + colors[3];
 
-        // The colour sequence the Operator has to press
+        // The color sequence the operator must enter
         int code = 0;
         for (int i = 0; i < 4; i++) code = code * 10 + Random.Range(0, 4);
         Code.Value = code;
@@ -46,7 +48,7 @@ public class SyncTask : CodeTask
         OperatorId.Value = WorkerIds.Count > 1 ? WorkerIds[1] : None;
     }
 
-    // panel
+    // panel ui
     private VisualElement readerView, operatorView, legendRow, sequenceRow;
     private Label roleLabel, instruction, entered;
     private readonly List<int> entry = new();
@@ -84,13 +86,14 @@ public class SyncTask : CodeTask
 
     public override void TickPanel() => Refresh();
 
+    // Show the reader or operator view based on the local player's assigned role
     private void Refresh()
     {
         ulong me = NetworkManager.Singleton.LocalClientId;
 
         int role; // 0 = waiting for partner, 1 = reader, 2 = operator
         if (ReaderId.Value == None || OperatorId.Value == None) role = 0;
-        else role = OperatorId.Value == me ? 2 : 1; // a third player just watches the reader view
+        else role = OperatorId.Value == me ? 2 : 1; // Other players see the reader
 
         if (role == shownRole && Code.Value == shownCode && Legend.Value == shownLegend) return;
         if (role != shownRole) { entry.Clear(); waiting = false; }
@@ -120,6 +123,7 @@ public class SyncTask : CodeTask
         }
     }
 
+    // Build the reader's color legend and translate the code into symbols
     private void BuildReader()
     {
         legendRow.Clear();
@@ -158,6 +162,7 @@ public class SyncTask : CodeTask
         }
     }
 
+    // Collect four color inputs and submit the sequence to the server
     private void Press(int color)
     {
         if (waiting || entry.Count >= 4) return;

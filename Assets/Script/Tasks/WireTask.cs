@@ -33,6 +33,7 @@ public class WireTask : StationTask
         rightCol = root.Q("right");
         roundLabel = root.Q<Label>("round");
 
+        // Overlay the wire canvas behind the selectable nodes
         canvas = new WireCanvas();
         board.Insert(0, canvas);
 
@@ -42,6 +43,7 @@ public class WireTask : StationTask
 
     public override void TickPanel() => canvas?.MarkDirtyRepaint();
 
+    // Create a shuffled matching puzzle for the current round
     private void NewRound()
     {
         int n = Mathf.Clamp(wireCount, 2, WireColors.Length);
@@ -53,6 +55,7 @@ public class WireTask : StationTask
         rightColor = new int[n];
         for (int i = 0; i < n; i++) leftColor[i] = rightColor[i] = order[i];
 
+        // Shuffle the right side, ensuring it differs from the left
         do { Shuffle(rightColor); } while (SameOrder(leftColor, rightColor));
 
         leftCol.Clear();
@@ -89,6 +92,7 @@ public class WireTask : StationTask
         return b;
     }
 
+    // Select a wire on the left before choosing its match on the right
     private void ClickLeft(int i)
     {
         if (locked || leftDone[i]) return;
@@ -98,6 +102,7 @@ public class WireTask : StationTask
         left[i].AddToClassList("wire-node--selected");
     }
 
+    // Connect matching colors, or report a mistake and clear the selection
     private void ClickRight(int j)
     {
         if (locked || rightDone[j] || selected < 0) return;
@@ -129,6 +134,7 @@ public class WireTask : StationTask
         }
     }
 
+    // Award progress and start the next panel, or finish the task
     private void RoundComplete()
     {
         locked = true;
@@ -152,6 +158,7 @@ public class WireTask : StationTask
         return true;
     }
 
+    // Randomize the order of the wire colors
     private static void Shuffle<T>(IList<T> list)
     {
         for (int i = list.Count - 1; i > 0; i--)

@@ -9,6 +9,7 @@ public class BreakerTask : StationTask
     public override TaskMode Mode => TaskMode.Panel;
     public override string Prompt => "Press E to use the breaker panel";
 
+    // The target pattern and the player's current switch states
     private bool[] switches, pattern;
     private VisualElement patternRow, switchRow;
     private Label roundLabel;
@@ -21,11 +22,13 @@ public class BreakerTask : StationTask
         NewPuzzle();
     }
 
+    // Generate a pattern, display it, and create the interactive switches
     private void NewPuzzle()
     {
         switches = new bool[switchCount];
         pattern = new bool[switchCount];
 
+        // Ensure the puzzle always has at least one switch set to O
         bool anyOn = false;
         for (int i = 0; i < switchCount; i++)
         {
@@ -55,6 +58,7 @@ public class BreakerTask : StationTask
         roundLabel.text = $"Round {round}/{rounds}";
     }
 
+    // Toggle the selected switch; complete the round when all switches match
     private void Toggle(int index, Button sw)
     {
         switches[index] = !switches[index];

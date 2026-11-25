@@ -24,6 +24,7 @@ public class RoleHud : MonoBehaviour
 
     private void Update()
     {
+        // Only the owning player displays their role HUD and reads the test keys
         if (!role.IsOwner) return;
 
         // Show the big role banner whenever the role changes
@@ -56,6 +57,7 @@ public class RoleHud : MonoBehaviour
 
         DrawRoleLabel(current);
 
+        // Find and display the targets associated with this player's role
         MarkerType wanted = GetMarkerType(current);
         CollectTargets(wanted);
 
@@ -63,8 +65,7 @@ public class RoleHud : MonoBehaviour
             DrawMarker(target, wanted);
     }
 
-    // What each role sees
-
+    // Map each role to the type of objects it can locate
     private static MarkerType GetMarkerType(RoleType role) => role switch
     {
         RoleType.Locater => MarkerType.Ghost,
@@ -108,17 +109,16 @@ public class RoleHud : MonoBehaviour
             if (t.Type != wanted) continue;
 
             // Don't mark yourself
-            if (wanted == MarkerType.Player &&
-                t.TryGetComponent(out NetworkObject netObj) && netObj.IsOwner) continue;
+            if (wanted == MarkerType.Player && t.TryGetComponent(out NetworkObject netObj) && netObj.IsOwner) continue;
 
             targets.Add(t);
         }
 
+        // Limit pellet markers to the nearest ones to reduce HUD clutter
         if (wanted == MarkerType.Pellet && targets.Count > maxPelletMarkers)
         {
             Vector3 me = cam.transform.position;
-            targets.Sort((a, b) =>
-                (a.transform.position - me).sqrMagnitude.CompareTo((b.transform.position - me).sqrMagnitude));
+            targets.Sort((a, b) => (a.transform.position - me).sqrMagnitude.CompareTo((b.transform.position - me).sqrMagnitude));
             targets.RemoveRange(maxPelletMarkers, targets.Count - maxPelletMarkers);
         }
     }
@@ -168,6 +168,7 @@ public class RoleHud : MonoBehaviour
         var small = new GUIStyle(GUI.skin.label) { fontSize = 16 };
         GUI.Label(new Rect(10, Screen.height - 34, 400, 28), $"Role: {GetTitle(current)}", small);
 
+        // Show the introduction banner briefly after the role is assigned or changed
         if (Time.time >= bannerUntil) return;
 
         float fade = Mathf.Clamp01((bannerUntil - Time.time) / 1.5f);

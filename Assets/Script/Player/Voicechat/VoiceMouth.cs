@@ -19,6 +19,7 @@ public class VoiceMouth : NetworkBehaviour
     [SerializeField] private float closeSpeed = 12f;
     [SerializeField] private bool debugLog;
 
+    // The owner publishes their Vivox ID so clients can match it to speaking activity
     private readonly NetworkVariable<FixedString64Bytes> voiceId = new( default, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
 
     private Vector3 closedScale = Vector3.one;
@@ -28,6 +29,7 @@ public class VoiceMouth : NetworkBehaviour
 
     private void Awake()
     {
+        // Find the mouth by name if it wasn't assigned in the Inspector
         if (mouth == null)
         {
             foreach (var t in GetComponentsInChildren<Transform>(true))
@@ -46,6 +48,7 @@ public class VoiceMouth : NetworkBehaviour
         voiceId.OnValueChanged += OnIdChanged;
         cachedId = voiceId.Value.ToString();
 
+        // Each player sends their own Vivox ID to the other clients
         if (!IsOwner) return;
 
         try { voiceId.Value = AuthenticationService.Instance.PlayerId; }
@@ -60,7 +63,7 @@ public class VoiceMouth : NetworkBehaviour
     private void OnIdChanged(FixedString64Bytes previous, FixedString64Bytes current)
         => cachedId = current.ToString();
 
-    // How loud this player is right now, 0 to 1
+    // Read Vivox speaking activity and return a mouth-opening value from 0 to 1
     private float TargetLevel()
     {
         if (string.IsNullOrEmpty(cachedId)) return 0f;
@@ -83,7 +86,7 @@ public class VoiceMouth : NetworkBehaviour
                 }
             }
         }
-        catch { return 0f; } // voice isn't ready yet
+        catch { return 0f; } // Vivox may not be ready yet
 
         if (!speaking) return 0f;
 

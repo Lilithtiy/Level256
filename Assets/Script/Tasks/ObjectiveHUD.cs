@@ -10,6 +10,7 @@ public class ObjectiveHUD : MonoBehaviour
     private ExitZone exit;
     private float nextRefresh;
 
+    // Cache each tasks ui row so it can be updated or removed efficiently
     private readonly Dictionary<StationTask, (VisualElement row, Label value)> rows = new();
 
     private void OnEnable()
@@ -27,6 +28,7 @@ public class ObjectiveHUD : MonoBehaviour
 
     private void Update()
     {
+        // Refresh periodically rather than updating the UI every frame
         if (Time.unscaledTime < nextRefresh) return;
         nextRefresh = Time.unscaledTime + 0.2f;
 
@@ -40,6 +42,7 @@ public class ObjectiveHUD : MonoBehaviour
         RefreshObjectives();
     }
 
+    // Create or update rows for active tasks and remove rows for inactive ones
     private void RefreshTasks()
     {
         var seen = new HashSet<StationTask>();
@@ -89,6 +92,7 @@ public class ObjectiveHUD : MonoBehaviour
         return (row, value);
     }
 
+    // Update energy and exit status from their networked objective state
     private void RefreshObjectives()
     {
         var obj = ObjectiveManager.Instance;
@@ -101,7 +105,7 @@ public class ObjectiveHUD : MonoBehaviour
             powerValue.text = $"{score.electricityScore.Value}/{obj.EnergyNeeded}";
         powerRow.EnableInClassList("hud__row--done", obj.EnergyFull.Value);
 
-        // exit
+        // Show whether the exit is locked or how many players are inside
         if (exit == null) exit = FindFirstObjectByType<ExitZone>();
         bool open = obj.ExitOpen.Value;
         exitValue.text = !open ? "LOCKED" : exit != null ? $"OPEN  {exit.PlayersInside.Value}/{exit.PlayersTotal.Value}" : "OPEN";

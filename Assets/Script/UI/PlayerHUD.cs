@@ -23,6 +23,7 @@ public class PlayerHUD : MonoBehaviour
 
     private void OnDisable()
     {
+        // Unsubscribe from score updates to avoid stale event handlers
         if (gameManager != null)
         {
             gameManager.electricityScore.OnValueChanged -= OnElectricityScoreChanged;
@@ -34,6 +35,7 @@ public class PlayerHUD : MonoBehaviour
 
     private void Update()
     {
+        // Wait until the networked ScoreManager is available, then subscribe to its updates
         if(gameManager == null)
         {
             ScoreManager potentialGameManager = ScoreManager.scoreManager;

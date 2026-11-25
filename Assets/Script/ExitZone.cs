@@ -7,6 +7,7 @@ public class ExitZone : NetworkBehaviour
     [SerializeField] private GameObject barrier;
     [SerializeField] private float holdSeconds = 2f;
 
+    // Server-updated counts displayed by clients
     public NetworkVariable<int> PlayersInside = new(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     public NetworkVariable<int> PlayersTotal = new(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
@@ -22,11 +23,12 @@ public class ExitZone : NetworkBehaviour
 
     private void Update()
     {
+        // Hide the barrier when the exit opens
         bool open = IsOpen;
         if (barrier != null && barrier.activeSelf == open)
             barrier.SetActive(!open);
 
-        if (!IsServer) return;
+        if (!IsServer) return; // Only the server tracks players and determines whether the team wins
 
         var gm = GameManager.Instance;
         if (!open || gm == null || gm.State.Value != GameState.Playing)
@@ -35,6 +37,7 @@ public class ExitZone : NetworkBehaviour
             return;
         }
 
+        // Count connected players inside the exit zone
         int total = 0, inside = 0;
         foreach (var client in NetworkManager.Singleton.ConnectedClientsList)
         {
@@ -46,6 +49,7 @@ public class ExitZone : NetworkBehaviour
         PlayersInside.Value = inside;
         PlayersTotal.Value = total;
 
+        // Win only after every player stays inside for the required duration
         if (total > 0 && inside == total)
         {
             timer += Time.deltaTime;

@@ -18,6 +18,7 @@ public class TwinKeyTask : StationTask
     [SerializeField] private Color heldColor = Color.green;
     [SerializeField] private Color idleColor = Color.red;
 
+    // Each bit represents whether a corresponding console is currently held
     public NetworkVariable<int> HeldMask = new(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
     public override TaskMode Mode => TaskMode.Hold;
@@ -39,6 +40,7 @@ public class TwinKeyTask : StationTask
         return count;
     }
 
+    // Find the nearest console within interaction range
     private int NearestStation(Vector3 position)
     {
         int best = -1;
@@ -85,6 +87,7 @@ public class TwinKeyTask : StationTask
 
     protected override void OnWorkersChanged() => HeldMask.Value = ComputeHeld();
 
+    // Progress advances only while every console is held; otherwise it slips backward
     protected override void ServerTick(float deltaTime)
     {
         int mask = ComputeHeld();
@@ -96,6 +99,7 @@ public class TwinKeyTask : StationTask
             Progress.Value = Mathf.Max(0f, Progress.Value - slipPerSecond * deltaTime);
     }
 
+    // Clear held consoles and decay progress when nobody is working
     protected override void ServerIdle(float deltaTime)
     {
         if (HeldMask.Value != 0) HeldMask.Value = 0;

@@ -24,6 +24,7 @@ public class PlayerInteractor : NetworkBehaviour
         player = GetComponent<PlayerController>();
     }
 
+    // Only the owning client handles input
     public override void OnNetworkSpawn()
     {
         if (IsOwner) interactAction.action.Enable();
@@ -35,6 +36,7 @@ public class PlayerInteractor : NetworkBehaviour
 
         interactAction.action.Disable();
 
+        // Clean up any interaction UI when this player despawns
         var host = TaskPanelHost.Instance;
         if (host != null)
         {
@@ -68,6 +70,7 @@ public class PlayerInteractor : NetworkBehaviour
                 return;
             }
 
+            // Keep a completed panel visible briefly so its result can be read
             if (working.IsDone.Value)
             {
                 if (doneAt < 0f) doneAt = Time.time;
@@ -106,6 +109,7 @@ public class PlayerInteractor : NetworkBehaviour
         if (target.Workers.Value > 0) prompt += $"   ({target.Workers.Value} working)";
         host.ShowPrompt(prompt);
 
+        // Start the interaction appropriate to this task's mode
         switch (target.Mode)
         {
             case TaskMode.Hold:
@@ -120,6 +124,7 @@ public class PlayerInteractor : NetworkBehaviour
         }
     }
 
+    // Find an active, unfinished task under the player's crosshair
     private StationTask FindTarget()
     {
         var ray = new Ray(cam.transform.position, cam.transform.forward);

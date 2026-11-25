@@ -69,6 +69,7 @@ public class GhostAI : NetworkBehaviour
         agent = GetComponent<NavMeshAgent>();
     }
 
+    // Ghost AI runs on the server; clients disable their NavMeshAgent and this script
     public override void OnNetworkSpawn()
     {
         if (!IsServer)
@@ -195,6 +196,7 @@ public class GhostAI : NetworkBehaviour
         }
     }
 
+    // Despawn this ghost and schedule a replacement unless this is the tutorial ghost
     private void EatGhost()
     {
         if (!NetworkObject.IsSpawned) return;
@@ -362,6 +364,7 @@ public class GhostAI : NetworkBehaviour
     }
 
 
+    // Move toward a nearby player only while the shy ghost is not being watched
     private void UpdateShy(GameManager gm)
     {
         bool watched = IsObserved();
@@ -393,6 +396,7 @@ public class GhostAI : NetworkBehaviour
         agent.SetDestination(target.position);
     }
 
+    // A player observes the ghost if it is in range, in their view, and unobstructed
     private bool IsObserved()
     {
         Vector3 point = transform.position + Vector3.up * watchPointHeight;

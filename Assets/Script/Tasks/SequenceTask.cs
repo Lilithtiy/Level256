@@ -25,6 +25,7 @@ public class SequenceTask : StationTask
         var row = root.Q("pads");
         row.Clear();
 
+        // Create the four pads and connect each one to its input handler
         for (int i = 0; i < 4; i++)
         {
             int index = i;
@@ -42,6 +43,7 @@ public class SequenceTask : StationTask
         Begin(1f, true);
     }
 
+    // Start showing a sequence, optionally generating a new one for the next round
     private void Begin(float delay, bool newSequence)
     {
         if (newSequence)
@@ -58,6 +60,7 @@ public class SequenceTask : StationTask
         info.text = $"ROUND {roundNo + 1}/{rounds}  -  WATCH";
     }
 
+    // Step through the sequence, then enable input for the player
     public override void TickPanel()
     {
         if (phase != Phase.Show || Time.time < nextStep) return;
@@ -86,6 +89,7 @@ public class SequenceTask : StationTask
 
     private void SetLit(int i, bool on) => pads[i].EnableInClassList("pad--lit", on);
 
+    // Check each pad press against the sequence and advance or restart as needed
     private void Press(int i)
     {
         if (phase != Phase.Input) return;
@@ -117,6 +121,7 @@ public class SequenceTask : StationTask
         Begin(1.2f, true);
     }
 
+    // Prevent input while the sequence is being shown
     private void SetPadsInteractive(bool on)
     {
         foreach (var p in pads)

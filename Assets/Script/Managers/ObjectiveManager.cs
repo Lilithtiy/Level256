@@ -14,6 +14,7 @@ public class ObjectiveManager : NetworkBehaviour
     [SerializeField] private bool requireEnergy = true;
     [SerializeField] private int energyNeeded = 100;
 
+    // Server-owned objective state synchronized with all clients
     public NetworkVariable<bool> TasksDone = new(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     public NetworkVariable<bool> EnergyFull = new(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     public NetworkVariable<bool> ExitOpen = new(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
@@ -25,6 +26,7 @@ public class ObjectiveManager : NetworkBehaviour
         Instance = this;
     }
 
+    // The server listens for task completion to update the exit objective
     public override void OnNetworkSpawn()
     {
         if (!IsServer) return;
@@ -53,6 +55,7 @@ public class ObjectiveManager : NetworkBehaviour
         Evaluate();
     }
 
+    // Open the exit once all required objectives are complete
     private void Evaluate()
     {
         if (ExitOpen.Value) return;
@@ -65,9 +68,9 @@ public class ObjectiveManager : NetworkBehaviour
     {
         if (!IsServer) return;
 
+        // Check whether the collected energy has reached the required amount
         var score = ScoreManager.scoreManager;
-        if (!EnergyFull.Value && score != null && score.IsSpawned &&
-            score.electricityScore.Value >= energyNeeded)
+        if (!EnergyFull.Value && score != null && score.IsSpawned && score.electricityScore.Value >= energyNeeded)
         {
             SetEnergyFull(true);
         }

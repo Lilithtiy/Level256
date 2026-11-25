@@ -17,10 +17,9 @@ public class PlayerNameTag : NetworkBehaviour
     [SerializeField] private float minScale = 0.5f;
     [SerializeField] private float maxScale = 2.5f;
 
-    private readonly NetworkVariable<FixedString32Bytes> displayName = new(
-        default, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
-    private readonly NetworkVariable<byte> colorIndex = new(
-        0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+    // The server owns name and color values and synchronizes them to clients
+    private readonly NetworkVariable<FixedString32Bytes> displayName = new(default, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+    private readonly NetworkVariable<byte> colorIndex = new(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
     private CharacterController controller;
     private TextMeshPro tmp;
@@ -33,6 +32,7 @@ public class PlayerNameTag : NetworkBehaviour
     {
         controller = GetComponent<CharacterController>();
 
+        // Find the optional head marker by name if it wasn't assigned in the Inspector
         if (headPoint == null)
         {
             foreach (var t in GetComponentsInChildren<Transform>(true))
@@ -52,6 +52,7 @@ public class PlayerNameTag : NetworkBehaviour
         if (IsServer) AssignFromLobby();
         if (IsOwner) SubmitNameRpc(Fixed(PlayerName.Load()));
 
+        // Name tags are only needed on other players, not on the local player
         if (!IsOwner) CreateTag();
         Refresh();
     }
@@ -62,7 +63,7 @@ public class PlayerNameTag : NetworkBehaviour
         colorIndex.OnValueChanged -= OnColorChanged;
     }
 
-    // server: who is who
+    // Server applies saved lobby profiles or assigns a fallback name and free color
     private void AssignFromLobby()
     {
         if (LobbyManager.Profiles.TryGetValue(OwnerClientId, out var p))
@@ -89,6 +90,7 @@ public class PlayerNameTag : NetworkBehaviour
         return 0;
     }
 
+    // Accept a name from its owner only when the player wasn't already named in the lobby
     [Rpc(SendTo.Server)]
     private void SubmitNameRpc(FixedString32Bytes raw, RpcParams rpcParams = default)
     {
@@ -105,6 +107,7 @@ public class PlayerNameTag : NetworkBehaviour
         return f;
     }
 
+    // Create the world-space text label for this player
     private void CreateTag()
     {
         var go = new GameObject("NameTag", typeof(RectTransform));
@@ -132,6 +135,7 @@ public class PlayerNameTag : NetworkBehaviour
         tmp.color = LobbyManager.PlayerColors[colorIndex.Value % LobbyManager.PlayerColors.Length];
     }
 
+    // Get the local player's camera, falling back to the main camera if needed
     private static Camera ViewCamera()
     {
         if (viewCam != null && viewCam.isActiveAndEnabled) return viewCam;
@@ -143,6 +147,7 @@ public class PlayerNameTag : NetworkBehaviour
         return viewCam;
     }
 
+    // Keep the label above the player's head, facing the camera, and scaled by distance
     private void LateUpdate()
     {
         if (tagTransform == null) return;

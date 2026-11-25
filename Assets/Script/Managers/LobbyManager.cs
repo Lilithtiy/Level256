@@ -6,6 +6,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
 
+// Data for one lobby member, synchronized through the NetworkList
 public struct LobbyPlayer : INetworkSerializable, System.IEquatable<LobbyPlayer>
 {
     public ulong clientId;
@@ -51,6 +52,7 @@ public class LobbyManager : NetworkBehaviour
     private static readonly Color PingBad = new Color(1f, 0.35f, 0.3f);
     private static readonly Color Dim = new Color(1f, 1f, 1f, 0.4f);
 
+    // NetworkList keeps lobby player data synchronized across clients
     private NetworkList<LobbyPlayer> players;
 
     // chat/name input
@@ -94,6 +96,7 @@ public class LobbyManager : NetworkBehaviour
 
     private void OnEnable() => TryBind();
 
+    // Initialize the lobby UI and register server-side connection callbacks
     public override void OnNetworkSpawn()
     {
         TryBind();
@@ -170,18 +173,19 @@ public class LobbyManager : NetworkBehaviour
         return 0;
     }
 
+    // The server creates and removes lobby entries as clients connect or disconnect
     private void AddPlayer(ulong clientId)
     {
         if (FindIndex(clientId) >= 0) return;
         players.Add(new LobbyPlayer { clientId = clientId, ready = false, color = FirstFreeColor() });
     }
-
     private void RemovePlayer(ulong clientId)
     {
         int i = FindIndex(clientId);
         if (i >= 0) players.RemoveAt(i);
     }
 
+    // These RPCs let clients request lobby changes, the server updates the shared player list
     [Rpc(SendTo.Server)]
     private void SetReadyRpc(bool ready, RpcParams rpcParams = default)
     {
@@ -191,7 +195,6 @@ public class LobbyManager : NetworkBehaviour
         p.ready = ready;
         players[i] = p;
     }
-
     [Rpc(SendTo.Server)]
     private void SetNameRpc(FixedString32Bytes rawName, RpcParams rpcParams = default)
     {
@@ -211,7 +214,6 @@ public class LobbyManager : NetworkBehaviour
 
         players.Add(new LobbyPlayer { clientId = id, ready = false, name = clean, color = FirstFreeColor() });
     }
-
     [Rpc(SendTo.Server)]
     private void ChangeColorRpc(RpcParams rpcParams = default)
     {
@@ -230,12 +232,12 @@ public class LobbyManager : NetworkBehaviour
         }
     }
 
+    // Forward chat messages from the sender to every lobby client
     [Rpc(SendTo.Server)]
     private void SendChatRpc(FixedString128Bytes message, RpcParams rpcParams = default)
     {
         ReceiveChatRpc(rpcParams.Receive.SenderClientId, message);
     }
-
     [Rpc(SendTo.Everyone)]
     private void ReceiveChatRpc(ulong senderId, FixedString128Bytes message)
     {
@@ -255,6 +257,7 @@ public class LobbyManager : NetworkBehaviour
         return true;
     }
 
+    // Save lobby names and colors so they can be applied to players when the game starts
     private void SnapshotProfiles()
     {
         Profiles.Clear();
@@ -281,7 +284,7 @@ public class LobbyManager : NetworkBehaviour
         SetNameRpc(n);
     }
 
-    // UI
+    // Find the lobby UI elements and register their button and input callbacks
     private bool TryBind()
     {
         if (root != null && root.panel != null) return true;
@@ -359,6 +362,7 @@ public class LobbyManager : NetworkBehaviour
         return true;
     }
 
+    // The host starts the game when everyone is ready, clients toggle their ready state
     private void OnStartClicked()
     {
         AudioManager.audioManagerInstance.PlayLocal(menuSelectAudio);
@@ -474,6 +478,7 @@ public class LobbyManager : NetworkBehaviour
         return row;
     }
 
+    // Build or refresh the player rows to display names, colors, ready states, and ping
     private void RefreshPlayers()
     {
         var nm = NetworkManager.Singleton;
@@ -516,6 +521,7 @@ public class LobbyManager : NetworkBehaviour
         }
     }
 
+    // Handle lobby shortcuts for chat input, submitting, and cancelling
     private void HandleKeys()
     {
         if (SettingsMenu.IsOpen) return;
@@ -538,6 +544,7 @@ public class LobbyManager : NetworkBehaviour
         }
     }
 
+    // Refresh lobby text, player rows, buttons, and server-measured ping while the UI is active
     private void Update()
     {
         if (IsSpawned)

@@ -23,6 +23,7 @@ public class RelayTask : StationTask
     [SerializeField] private float wrongNoiseRadius = 20f;
     [SerializeField] private float wrongNoiseSeconds = 3f;
 
+    // Server-owned relay state synchronized with clients
     public NetworkVariable<int> Code = new(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     public NetworkVariable<int> RoundNo = new(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     // Bit 0 = someone at the transmitter, bit 1 = someone at the receiver
@@ -63,7 +64,7 @@ public class RelayTask : StationTask
 
     private int PresentCount() => ((Present.Value & 1) != 0 ? 1 : 0) + ((Present.Value & 2) != 0 ? 1 : 0);
 
-    // server
+    // server helpers
     private int ConsoleOf(ulong clientId)
     {
         if (!NetworkManager.Singleton.ConnectedClients.TryGetValue(clientId, out var client) || client.PlayerObject == null)
@@ -82,6 +83,7 @@ public class RelayTask : StationTask
         return mask;
     }
 
+    // Generate a new number that gains a digit each round
     private void NewCode()
     {
         int digits = Mathf.Clamp(startDigits + RoundNo.Value, 3, 9);
@@ -98,13 +100,14 @@ public class RelayTask : StationTask
 
     protected override void OnWorkersChanged() => Present.Value = ComputePresent();
 
-    // Ghosts hear every console that's in use
+    // Emit sound at each occupied console so nearby ghosts can hear the task
     protected override void EmitWorkNoise(float radius, float seconds)
     {
         if ((Present.Value & 1) != 0 && transmitter != null) EmitAlarmAt(transmitter.position, radius, seconds);
         if ((Present.Value & 2) != 0 && receiver != null) EmitAlarmAt(receiver.position, radius, seconds);
     }
 
+    // Validate submissions on the server and advance the relay when correct
     [Rpc(SendTo.Server)]
     public void SubmitRelayRpc(int code, RpcParams rpcParams = default)
     {
@@ -137,7 +140,7 @@ public class RelayTask : StationTask
             OnResult(ok, finished);
     }
 
-    // panel (client)
+    // panel ui (client)
     private VisualElement transmitView, receiveView;
     private Label roleLabel, instruction, numberLabel, entryLabel, linkLabel, roundLabel;
     private string entry = "";
@@ -153,6 +156,7 @@ public class RelayTask : StationTask
         return obj == null ? -1 : NearestConsole(obj.transform.position);
     }
 
+    // Build the appropriate panel for the local player's console
     public override void BindPanel(VisualElement root)
     {
         roleLabel = root.Q<Label>("role");
@@ -199,6 +203,7 @@ public class RelayTask : StationTask
 
     public override void TickPanel() => Refresh();
 
+    // Refresh the panel only when synchronized task state changes
     private void Refresh()
     {
         if (Code.Value == shownCode && RoundNo.Value == shownRound && Present.Value == shownPresent) return;
@@ -225,9 +230,9 @@ public class RelayTask : StationTask
             UpdateEntry();
     }
 
-    private void UpdateEntry()
-        => entryLabel.text = string.Join(" ", entry.PadRight(Digits, '_').ToCharArray());
+    private void UpdateEntry() => entryLabel.text = string.Join(" ", entry.PadRight(Digits, '_').ToCharArray());
 
+    // Handle keypad input and submit once all digits have been entered
     private void Press(string key)
     {
         if (waiting) return;
@@ -269,7 +274,7 @@ public class RelayTask : StationTask
         else Say("Wrong number! The alarm is loud!", false, 2f);
     }
 
-    // visuals
+    // visuals, update console indicator lamps when player presence changes
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();

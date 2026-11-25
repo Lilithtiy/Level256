@@ -6,6 +6,7 @@ public class LeverTask : CodeTask
 {
     public override string Prompt => "Press E to use the signal levers";
 
+    // Show the correct lever order on the task board
     public override string BoardText
     {
         get
@@ -21,6 +22,7 @@ public class LeverTask : CodeTask
 
     private static char Letter(int index) => (char)('A' + index);
 
+    // Randomize the four-lever sequence for the new round
     protected override void OnRoundSetup()
     {
         var order = new List<int> { 0, 1, 2, 3 };
@@ -32,6 +34,7 @@ public class LeverTask : CodeTask
         Code.Value = order[0] * 1000 + order[1] * 100 + order[2] * 10 + order[3];
     }
 
+    // Create the four clickable lever buttons in the task panel
     public override void BindPanel(VisualElement root)
     {
         var row = root.Q("levers");
@@ -50,6 +53,7 @@ public class LeverTask : CodeTask
         }
     }
 
+    // Record the lever order and submit it once all four have been pulled
     private void Pull(int index)
     {
         if (waiting || pulled.Contains(index)) return;
@@ -64,6 +68,7 @@ public class LeverTask : CodeTask
         SubmitCodeRpc(pulled[0] * 1000 + pulled[1] * 100 + pulled[2] * 10 + pulled[3]);
     }
 
+    // Show the result and reset the levers after an incorrect sequence
     protected override void OnCodeResult(bool ok)
     {
         waiting = false;

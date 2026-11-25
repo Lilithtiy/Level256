@@ -7,10 +7,12 @@ public abstract class CodeTask : StationTask
     [SerializeField] private float wrongNoiseRadius = 20f;
     [SerializeField] private float wrongNoiseSeconds = 3f;
 
+    // The server sets the answer and synchronizes it with clients
     public NetworkVariable<int> Code = new(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
     public override TaskMode Mode => TaskMode.Panel;
 
+    // Validate the submitted answer on the server and report the result
     [Rpc(SendTo.Server)]
     public void SubmitCodeRpc(int code, RpcParams rpcParams = default)
     {
@@ -32,5 +34,6 @@ public abstract class CodeTask : StationTask
             OnCodeResult(ok);
     }
 
+    // Override this in derived tasks to handle the submitted-code result
     protected virtual void OnCodeResult(bool ok) { }
 }
